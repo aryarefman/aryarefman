@@ -29,12 +29,9 @@ Information Technology Student
 <a href="https://github.com/aryarefman" align="left"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=aryarefman&langs_count=10&title_color=0891b2&text_color=ffffff&icon_color=0891b2&bg_color=1c1917&hide_border=true&locale=en&custom_title=Top%20%Languages" alt="Top Languages" /></a>
 
 <picture>
-  <source
-    srcset="https://aryarefman.github.io/aryarefman/pacman-contribution-graph-dark.svg"
-    media="(prefers-color-scheme: dark)"
-  />
-  <img
-    src="https://aryarefman.github.io/aryarefman/pacman-contribution-graph.svg"
-    alt="GitHub Pacman Contribution Graph"
-  />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/aryarefman/aryarefman/output/pacman-contribution-graph-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/aryarefman/aryarefman/output/pacman-contribution-graph.svg">
+  <img alt="pacman contribution graph" src="https://raw.githubusercontent.com/aryarefman/aryarefman/output/pacman-contribution-graph.svg">
 </picture>
+
+_generated with [abozanona/pacman-contribution-graph](https://abozanona.github.io/pacman-contribution-graph/)_
