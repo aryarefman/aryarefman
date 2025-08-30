@@ -7,8 +7,6 @@
 </div>
 
 <p align="center">
-  <img src="https://komarev.com/ghpvc/?username=aryarefman&color=FF6B6B&style=for-the-badge&label=Profile+Views" alt="Profile Views"/>
-  <img src="https://img.shields.io/github/followers/aryarefman?label=Followers&style=for-the-badge&color=4ECDC4" alt="Followers"/>
   <img src="https://img.shields.io/badge/Focus-AI%20%26%20ML-45B7D1?style=for-the-badge" alt="Focus"/>
   <img src="https://img.shields.io/badge/Status-Student-00D4AA?style=for-the-badge" alt="Status"/>
 </p>
