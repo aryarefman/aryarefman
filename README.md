@@ -32,7 +32,7 @@
 
 ### 🔥 What I'm Up To
 
-python
+```python
 class Arya:
     def __init__(self):
         self.role = "IT Student & AI Enthusiast"
@@ -56,7 +56,7 @@ class Arya:
 
 me = Arya()
 me.say_hi()
-
+```
 
 </td>
 <td width="45%" align="center">
