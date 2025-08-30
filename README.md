@@ -150,6 +150,7 @@ me.say_hi()
     <img alt="Pacman Contribution Graph" src="https://raw.githubusercontent.com/aryarefman/aryarefman/output/pacman-contribution-graph.svg" width="100%"/>
   </picture>
 </div>
+
 ---
 
 ## 🎯 Learning Journey
