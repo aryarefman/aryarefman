@@ -21,10 +21,10 @@
 
 ### 👨‍🎓 Student & Developer
 
-🎓 **Information Technology Student**  
-📍 **Location**: Surabaya, East Java, Indonesia  
-🎯 **Passion**: Artificial Intelligence & Machine Learning  
-💡 **Goal**: Creating intelligent solutions for real-world problems  
+- 🎓 **Information Technology Student in Sepuluh Nopember Institute Technology**  
+- 📍 **Location**: Surabaya, East Java, Indonesia  
+- 🎯 **Passion**: Artificial Intelligence & Machine Learning  
+- 💡 **Goal**: Creating intelligent solutions for real-world problems  
 
 ### 🔥 What I'm Up To
 
