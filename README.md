@@ -116,31 +116,6 @@ me.say_hi()
 
 </details>
 
----
-
-## 📊 GitHub Statistics
-
-<div align="center">
-  
-<img src="https://github-readme-stats.vercel.app/api?username=aryarefman&show_icons=true&count_private=true&theme=radical&hide_border=true&bg_color=0D1117&title_color=FF6B6B&icon_color=4ECDC4&text_color=ffffff&custom_title=⚡%20Arya's%20GitHub%20Stats" height="180" alt="GitHub Stats"/>
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=aryarefman&layout=compact&theme=radical&hide_border=true&bg_color=0D1117&title_color=FF6B6B&text_color=ffffff&langs_count=8&custom_title=🔥%20Most%20Used%20Languages" height="180" alt="Top Languages"/>
-
-</div>
-
-<div align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com?user=aryarefman&theme=radical&hide_border=true&background=0D1117&stroke=FF6B6B&ring=4ECDC4&fire=45B7D1&currStreakNum=ffffff&sideNums=ffffff&currStreakLabel=4ECDC4&sideLabels=4ECDC4&dates=ffffff" alt="GitHub Streak" width="600"/>
-</div>
-
----
-
-## 🏆 GitHub Achievements
-
-<div align="center">
-  <img src="https://github-profile-trophy.vercel.app/?username=aryarefman&theme=radical&no-frame=true&no-bg=false&margin-w=4&row=1&column=6" alt="GitHub Trophies"/>
-</div>
-
----
-
 ## 📈 Contribution Activity
 
 ### 🐍 Snake
