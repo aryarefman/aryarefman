@@ -147,22 +147,22 @@ me.say_hi()
  ╚═════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝       ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
 
 🤖 AI & Machine Learning
-  ├─ 🧠 Deep Learning
-  ├─ 👁 Computer Vision  
-  ├─ 🔮 Neural Networks
-  └─ 📊 Data Science
+  ├─ Deep Learning
+  ├─ Computer Vision  
+  ├─ Neural Networks
+  └─ Data Science
 
 💻 Full Stack Development
-  ├─ 🎨 Frontend: HTML, CSS, Bootstrap
-  ├─ ⚙ Backend: Node.js
-  ├─ 🗄 Database: MySQL
-  └─ 🔧 Tools: Git, GitHub, VS Code
+  ├─ Frontend: HTML, CSS, Bootstrap
+  ├─ Backend: Node.js
+  ├─ Database: MySQL
+  └─ Tools: Git, GitHub, VS Code
 
 🚀 Programming Languages
-  ├─ 🐍 Python
-  ├─ 🌐 JavaScript
-  ├─ ⚡ C/C++
-  └─ 🔥 Always learning more!
+  ├─ Python
+  ├─ JavaScript
+  ├─ C/C++
+  └─ Always learning more!
 ```
 
 </div>
