@@ -1,15 +1,20 @@
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:FF6B6B,50:4ECDC4,100:45B7D1&height=200&section=header&text=Arya%20Bisma%20Putra%20Refman&fontSize=40&fontColor=fff&animation=twinkling&fontAlignY=35&desc=Information%20Technology%20Student&descAlignY=55&descSize=18&fontAlignX=50&fontName=PixelMplus" width="100%"/>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a0e1a,40:0d2137,70:0e3d3a,100:4ECDC4&height=220&section=header&text=Arya%20Bisma%20Putra%20Refman&fontSize=38&fontColor=ffffff&animation=twinkling&fontAlignY=40&desc=IT%20Student%20%E2%80%A2%20AI%20Enthusiast%20%E2%80%A2%20Full%20Stack%20Developer&descAlignY=60&descSize=15&fontName=Space%20Mono" width="100%"/>
 </div>
 
 <div align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Silkscreen&size=24&duration=3000&pause=1000&color=FF6B6B&center=true&vCenter=true&width=600&lines=👋+Hello%2C+I'm+Arya!;🎓+IT+Student+%7C+AI+Enthusiast;💻+Full+Stack+Developer;🌏+Based+in+Surabaya%2C+Indonesia;🚀+Building+the+Future+with+Code" alt="Typing Animation"/>
+  <img src="https://readme-typing-svg.demolab.com?font=Space+Mono&size=16&duration=3000&pause=1000&color=4ECDC4&center=true&vCenter=true&width=600&lines=%3E+Hello%2C+I'm+Arya!+%F0%9F%91%8B;%3E+IT+Student+%7C+AI+%26+ML+Enthusiast+%F0%9F%A4%96;%3E+Full+Stack+Developer+%F0%9F%92%BB;%3E+Based+in+Surabaya%2C+Indonesia+%F0%9F%87%AE%F0%9F%87%A9;%3E+Building+the+future%2C+one+commit+at+a+time...+%F0%9F%9A%80" alt="Typing Animation"/>
 </div>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Focus-AI%20%26%20ML-45B7D1?style=for-the-badge&labelColor=000000&color=45B7D1" alt="Focus"/>
-  <img src="https://img.shields.io/badge/Status-Student-00D4AA?style=for-the-badge&labelColor=000000&color=00D4AA" alt="Status"/>
-</p>
+<br/>
+
+<div align="center">
+  <img src="https://img.shields.io/badge/Focus-AI%20%26%20ML-4ECDC4?style=for-the-badge&labelColor=0a0e1a&color=4ECDC4" alt="Focus"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Status-Student-45B7D1?style=for-the-badge&labelColor=0a0e1a&color=45B7D1" alt="Status"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Open%20To-Collaborate-FF6B6B?style=for-the-badge&labelColor=0a0e1a&color=FF6B6B" alt="Open To Collaborate"/>
+</div>
 
 ---
 
