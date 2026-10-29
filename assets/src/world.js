@@ -930,7 +930,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     return g;
   }
 
-  // Island with a rolling heightfield top, strata cliffs, a jagged underside and hanging roots.
+  // Island with a rolling heightfield top, strata cliffs and a jagged underside.
   // pal: { top: [low, high], patch, cliff: [band1, band2, band3], under, root }
   function richIsland(R, seed, pal) {
     const g = new THREE.Group();
@@ -982,25 +982,17 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     // underside: a main spike and smaller ones, darker toward the tip
     const spikeAt = (rad, depth, x, z, sd) => {
       const geo = jitterRadial(spike(rad, depth, 14, 5), 0.12, sd).toNonIndexed();
-      const m = new THREE.Mesh(paint(geo, (px, py, pz, c) => c.copy(pal.under).lerp(hex("#0d0a18"), THREE.MathUtils.clamp((depth / 2 - py) / depth, 0, 1) * 0.75)), vmat);
+      // starts in the cliff's bottom colour so the rock reads as one piece, then darkens toward the tip
+      const m = new THREE.Mesh(paint(geo, (px, py, pz, c) => {
+        const k = THREE.MathUtils.clamp((depth / 2 - py) / depth, 0, 1);
+        c.copy(pal.cliff[2]).lerp(pal.under, THREE.MathUtils.smoothstep(k, 0.05, 0.45)).lerp(hex("#0d0a18"), k * 0.7);
+        c.offsetHSL(0, 0, (hash2(Math.atan2(pz, px) * 30, py * 20, sd) - 0.5) * 0.06);
+      }), vmat);
       m.rotation.x = Math.PI; m.position.set(x, -1.25 - depth / 2 + 0.02, z); m.castShadow = true; g.add(m);
     };
-    spikeAt(R * 0.72, R * 1.25, 0, 0, seed + 60);
+    spikeAt(R * 0.74, R * 1.25, 0, 0, seed + 60);
     const r = rng(seed + 90);
     for (let i = 0; i < 4; i++) { const a = r() * TAU, d = R * (0.3 + r() * 0.3); spikeAt(R * (0.18 + r() * 0.14), R * (0.5 + r() * 0.4), Math.cos(a) * d, Math.sin(a) * d, seed + 70 + i); }
-    // hanging roots
-    const roots = [];
-    for (let i = 0; i < 26; i++) {
-      const a = r() * TAU, rr = edge(a) * (0.72 + r() * 0.12), len = 0.25 + r() * 0.6;
-      const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
-      roots.push(new THREE.Vector3(x, -1.2, z), new THREE.Vector3(x * 0.97, -1.2 - len, z * 0.97));
-    }
-    g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(roots), new THREE.LineBasicMaterial({ color: pal.root || 0x3a2a22 })));
-    // floating rock bits below
-    for (let i = 0; i < 5; i++) {
-      const b = mesh(new THREE.DodecahedronGeometry(0.06 + r() * 0.1, 0), mat(pal.cliff[2]));
-      const a = r() * TAU, d = R * (0.6 + r() * 0.5); b.position.set(Math.cos(a) * d, -1.6 - r() * 1.4, Math.sin(a) * d); g.add(b);
-    }
     return { group: g, hAt, edge };
   }
 
@@ -1179,7 +1171,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
         const pl = palm(r, 0, 0, 0.85 + r() * 0.35); plant(g, isle, pl, x, z);
       });
       scatter(g, isle, 300, tuftGeo, [hex("#4fa64f"), hex("#6cc46a")], seed + 4, { maxD: 0.55 });
-      // beach hut on stilts, umbrella, towels, a small boat
+      // beach hut on stilts, umbrella and towels
       const hut = new THREE.Group();
       [[-0.18, -0.15], [0.18, -0.15], [-0.18, 0.15], [0.18, 0.15]].forEach(([x, z]) => { const s = mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.22, 5), mat(hex("#8a6a4a"))); s.position.set(x, 0.11, z); hut.add(s); });
       const floor = mesh(new THREE.BoxGeometry(0.46, 0.04, 0.4), mat(hex("#a5815a"))); floor.position.y = 0.23; hut.add(floor);
@@ -1191,11 +1183,6 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const canopy = mesh(new THREE.ConeGeometry(0.34, 0.14, 10), mat(hex("#ff6b6b"))); canopy.position.y = 0.56; umbrella.add(canopy);
       plant(g, isle, umbrella, 1.55, -0.45);
       [[1.4, -0.15, "#ffb454"], [1.7, -0.2, "#8b9cff"]].forEach(([x, z, c]) => { const t = mesh(new THREE.BoxGeometry(0.34, 0.012, 0.16), mat(hex(c)), { cast: false }); plant(g, isle, t, x, z).rotation.y = 0.5; });
-      const boat = new THREE.Group();
-      const hull = mesh(new THREE.BoxGeometry(0.5, 0.1, 0.18), mat(hex("#e8e2d6"))); boat.add(hull);
-      const bow = mesh(new THREE.ConeGeometry(0.09, 0.18, 4), mat(hex("#e8e2d6"))); bow.rotation.z = -Math.PI / 2; bow.position.x = 0.33; boat.add(bow);
-      boat.position.set(R * 1.12, -0.03, R * 0.25); boat.rotation.y = -0.4; g.add(boat);
-      updates.push((p) => { boat.position.y = -0.03 + 0.02 * Math.sin(TAU * p * 2); boat.rotation.z = 0.05 * Math.sin(TAU * p * 2); });
       const sun = glowSprite(hex("#ffd27a"), 2.2); sun.material.opacity = 0.7; sun.position.set(-0.6, 2.6, -1.4); g.add(sun);
       const sunCore = mesh(new THREE.IcosahedronGeometry(0.28, 1), new THREE.MeshBasicMaterial({ color: 0xffd27a }), { cast: false, receive: false });
       sunCore.position.copy(sun.position); g.add(sunCore);
