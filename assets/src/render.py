@@ -1,7 +1,7 @@
 """Render the profile's 3D artwork into assets/.
 
-  scene.html    -> seamless looping GIFs in the outer-space theme (hero, pillars, metrics, footer)
-  showcase.html -> looping GIF mockups of the featured projects (assets/projects/)
+  scene.html    -> seamless looping animated WebPs in the outer-space theme (hero, pillars, metrics, footer)
+  showcase.html -> looping animated WebP mockups of the featured projects (assets/projects/)
 
 Usage:  python assets/src/render.py [name ...]      (default: everything)
 Needs:  pip install playwright pillow && playwright install chromium; ffmpeg on PATH; internet (three.js and fonts from CDNs).
@@ -20,10 +20,12 @@ from playwright.sync_api import sync_playwright
 SRC = Path(__file__).resolve().parent
 ASSETS = SRC.parent
 # name: (width, height, frames per second)
-SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 15), "metrics": (1280, 400, 15), "seasons": (1280, 400, 15), "footer": (1280, 420, 15)}
+SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 20), "metrics": (1280, 400, 20), "seasons": (1280, 600, 20), "footer": (1280, 420, 20)}
 # name: (width, height)
 SHOWCASE = {"jagapadi": (1120, 540), **{n: (880, 520) for n in ("helaloka", "narpati", "algoverse", "aromasys", "skyopt", "siews", "soc")}}
-SHOWCASE_FPS = 10
+SHOWCASE_FPS = 15
+# README order of the cards, descending through the clouds towards dusk
+SHOWCASE_LAYER = {"jagapadi": 3.6, "algoverse": 3.85, "aromasys": 4.1, "siews": 4.35, "helaloka": 4.6, "narpati": 4.85, "soc": 5.1, "skyopt": 5.35}
 LAUNCH_ARGS = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
 
 
@@ -52,14 +54,10 @@ def open_page(browser, url, w, h):
 
 
 def encode(frames_dir: Path, fps: int, out: Path):
-    # Ordered (bayer) dithering is stable frame to frame, so unchanged regions stay unchanged and the GIF stays small.
-    graph = (
-        "split[a][b];[a]palettegen=max_colors=256:stats_mode=full:reserve_transparent=0[p];"
-        "[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle"
-    )
+    # Animated WebP: full colour, and roughly a third the size of the same animation as a GIF.
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", str(frames_dir / "f%04d.png"),
-         "-filter_complex", graph, "-loop", "0", str(out)],
+         "-c:v", "libwebp_anim", "-lossless", "0", "-quality", "82", "-compression_level", "6", "-loop", "0", str(out)],
         check=True,
     )
 
@@ -73,7 +71,7 @@ def render_scene(browser, port, name, themes=("dark",)):
         for i in range(count):
             page.evaluate(f"window.renderAt({i / fps})")
             page.screenshot(path=str(tmp / f"f{i:04d}.png"))
-        out = ASSETS / f"{name}-{theme}.gif"
+        out = ASSETS / f"{name}.webp"
         encode(tmp, fps, out)
         shutil.rmtree(tmp)
         page.close()
@@ -83,13 +81,13 @@ def render_scene(browser, port, name, themes=("dark",)):
 def render_showcase(browser, port, name):
     w, h = SHOWCASE[name]
     for theme in ("dark",):
-        page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}&theme={theme}", w, h)
+        page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}&theme={theme}&layer={SHOWCASE_LAYER[name]}", w, h)
         count = round(page.evaluate("window.LOOP") * SHOWCASE_FPS)
         tmp = Path(tempfile.mkdtemp(prefix=f"showcase-{name}-{theme}-"))
         for i in range(count):
             page.evaluate(f"window.renderAt({i / SHOWCASE_FPS})")
             page.screenshot(path=str(tmp / f"f{i:04d}.png"))
-        out = ASSETS / "projects" / f"{name}-{theme}.gif"
+        out = ASSETS / "projects" / f"{name}.webp"
         out.parent.mkdir(exist_ok=True)
         encode(tmp, SHOWCASE_FPS, out)
         shutil.rmtree(tmp)

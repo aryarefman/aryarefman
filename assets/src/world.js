@@ -8,7 +8,7 @@ export const ACCENTS = {
 };
 
 // drift: sway the hero camera within each loop so near and far layers slide past each other (parallax in a GIF).
-// stars3d: false leaves the sky to a painted backdrop (see starfield.js) so GIF frames stay small.
+// stars3d: false leaves the sky to the painted backdrop (sky.js), so animated frames stay small.
 export function createWorld({ name, scene, camera, width, height, dark, drift = false, stars3d = true }) {
   const DARK = dark;
   const W = width, H = height;
@@ -1054,22 +1054,27 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     LOOP = 4;
     lights();
     scene.children.filter((o) => o.isDirectionalLight && o.castShadow).forEach((l) => { l.castShadow = false; l.intensity *= 0.6; });
+    // scattered, not in a row: different heights, depths and sizes; labels hang under each island
+    const layout = [[-10.5, 2.4, -4, 0.95], [-3.4, -0.9, 3.0, 1.0], [3.8, 3.0, -6, 0.9], [10.2, -0.4, 0.5, 0.95]];
+    camera.userData.anchors = [];
     ["spring", "summer", "autumn", "winter"].forEach((season, i) => {
+      const [x, y, z, sc] = layout[i];
       const isle = seasonIsland(season, 200 + i * 17);
-      isle.group.scale.setScalar(1.05);
-      isle.group.position.set((i - 1.5) * 8.0, 0, 0);
+      isle.group.scale.setScalar(sc);
+      isle.group.position.set(x, y, z);
       scene.add(isle.group);
+      camera.userData.anchors.push(new THREE.Vector3(x, y - 2.3 * sc, z));
       animators.push((p) => {
         isle.update(p);
-        isle.group.position.y = 0.1 * Math.sin(TAU * p + i * 1.4);
+        isle.group.position.y = y + 0.12 * Math.sin(TAU * p + i * 1.4);
         isle.group.rotation.y = 0.5 + 0.18 * Math.sin(TAU * p + i);
       });
     });
-    camera.fov = 24;
-    camera.position.set(0, 3.2, 24);
-    camera.lookAt(0, 0.6, 0);
-    camera.setViewOffset(W, H, 0, H * 0.12, W, H);
-    swayCamera(new THREE.Vector3(0, 0.6, 0), 2.2, 0.35);
+    camera.fov = 30;
+    camera.position.set(0, 2.4, 27);
+    camera.lookAt(0, 0.2, 0);
+    camera.setViewOffset(W, H, 0, H * 0.02, W, H);
+    swayCamera(new THREE.Vector3(0, 0.2, 0), 1.2, 0.25);
   }
 
   // Portfolio site: the seasons spread far apart; the page moves the camera from one to the next.

@@ -54,7 +54,7 @@
   .metric .val { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; }
   .metric .lab { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.35; margin-top: 4px; }
   .metric .src { font-size: 11px; letter-spacing: 0.14em; margin-top: 8px; }
-  .season { position: absolute; bottom: 30px; width: 25%; text-align: center; }
+  .season { position: absolute; transform: translate(-50%, 0); text-align: center; white-space: nowrap; padding: 6px 12px; border-radius: 12px; background: rgba(8, 8, 26, 0.55); border: 1px solid var(--line); }
   .season b { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
   .season span { display: block; margin-top: 4px; font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 0.02em; color: var(--muted); }
   .heading { position: absolute; left: 0; right: 0; top: 34px; text-align: center; font-size: 13px; letter-spacing: 0.3em; color: var(--muted); }
@@ -84,7 +84,7 @@
 <script type="module">
 import * as THREE from "three";
 import { createWorld } from "./world.js";
-import { paintStars } from "./starfield.js";
+import { createSky } from "./sky.js";
 
 const params = new URLSearchParams(location.search);
 const SCENE = params.get("scene") || "hero";
@@ -126,10 +126,10 @@ const overlays = {
   seasons: `
     <div class="frame"></div>
     <div class="heading mono">MAP OF MY WORK · ONE ISLAND PER KIND OF PROJECT</div>
-    <div class="season" style="left:0"><b style="color:#ff94c2">Learning tools</b><span>AlgoVerse 🥈 · Sky Optimizers</span></div>
-    <div class="season" style="left:25%"><b style="color:#ffd27a">Hackathon builds</b><span>Jagapadi · HELALOKA · SIEWS+ 🏅</span></div>
-    <div class="season" style="left:50%"><b style="color:#ff8a3d">Products</b><span>AromaSys 🥈 · Narpati Quest</span></div>
-    <div class="season" style="left:75%"><b style="color:#bfe6ff">Security &amp; research</b><span>SOC-SOAR · LLM guardrails · SLR</span></div>`,
+    <div class="season" data-i="0"><b style="color:#ff94c2">Learning tools</b><span>AlgoVerse 🥈 · Sky Optimizers</span></div>
+    <div class="season" data-i="1"><b style="color:#ffd27a">Hackathon builds</b><span>Jagapadi · HELALOKA · SIEWS+ 🏅</span></div>
+    <div class="season" data-i="2"><b style="color:#ff8a3d">Products</b><span>AromaSys 🥈 · Narpati Quest</span></div>
+    <div class="season" data-i="3"><b style="color:#bfe6ff">Security &amp; research</b><span>SOC-SOAR · LLM guardrails · SLR</span></div>`,
   metrics: `
     <div class="frame"></div>
     <div class="heading mono">BY THE NUMBERS</div>
@@ -157,9 +157,29 @@ document.getElementById("stage").appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
 
-const world = createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: true, stars3d: SCENE === "hero" });
-if (SCENE !== "hero") paintStars(SCENE.length * 977);
+// Each README image is one layer of the descent from space to the ground (same painter as the portfolio).
+const LAYER = parseFloat(params.get("layer") ?? { hero: 0, pillars: 1, metrics: 2, seasons: 3, footer: 6 }[SCENE]);
+const skyCanvas = document.createElement("canvas");
+skyCanvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:-1";
+document.body.prepend(skyCanvas);
+createSky(skyCanvas, { reduceMotion: true }).draw(0, LAYER, 0, 0);
+
+// the footer is the landing: ground, photo and text, no 3D object, so a single still frame
+const world = SCENE === "footer"
+  ? { loop: 0.05, update() {} }
+  : createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: true, stars3d: false });
 window.LOOP = world.loop;
+
+// seasons map: put each label beside its island (anchors come from the world, projected at the rest pose)
+if (SCENE === "seasons") {
+  world.update(0);
+  camera.updateMatrixWorld();
+  camera.userData.anchors.forEach((v, i) => {
+    const el = document.querySelector(`.season[data-i="${i}"]`), q = v.clone().project(camera);
+    el.style.left = `${((q.x + 1) / 2) * W}px`;
+    el.style.top = `${((1 - q.y) / 2) * H}px`;
+  });
+}
 window.renderAt = (t) => {
   const p = ((t % world.loop) + world.loop) % world.loop / world.loop;
   world.update(p);
