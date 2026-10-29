@@ -64,9 +64,9 @@ def encode(frames_dir: Path, fps: int, out: Path):
     )
 
 
-def render_scene(browser, port, name):
+def render_scene(browser, port, name, themes=("dark", "light")):
     w, h, fps = SCENES[name]
-    for theme in ("dark", "light"):
+    for theme in themes:
         page = open_page(browser, f"http://127.0.0.1:{port}/scene.html?scene={name}&theme={theme}", w, h)
         count = round(page.evaluate("window.LOOP") * fps)
         tmp = Path(tempfile.mkdtemp(prefix=f"render-{name}-{theme}-"))

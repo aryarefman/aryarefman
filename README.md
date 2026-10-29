@@ -9,10 +9,14 @@
 </div>
 
 <p align="center">
+  <a href="https://aryarefman.github.io/"><img src="https://img.shields.io/badge/✦_Explore_the_3D_portfolio-aryarefman.github.io-1d1926?style=for-the-badge&labelColor=ffb454&color=1d1926" alt="Explore the 3D portfolio at aryarefman.github.io" height="34" /></a>
+</p>
+
+<p align="center">
   <a href="https://www.linkedin.com/in/aryarefman"><img src="https://img.shields.io/badge/LinkedIn-aryarefman-8b9cff?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=1d1926" alt="LinkedIn" /></a> <a href="mailto:arya445refman@gmail.com"><img src="https://img.shields.io/badge/Email-arya445refman-ff6b6b?style=for-the-badge&logo=gmail&logoColor=white&labelColor=1d1926" alt="Email" /></a> <a href="https://helaloka.up.railway.app/"><img src="https://img.shields.io/badge/Live-HELALOKA-ffb454?style=for-the-badge&logo=railway&logoColor=white&labelColor=1d1926" alt="HELALOKA live" /></a> <a href="https://web-sable-three-46.vercel.app"><img src="https://img.shields.io/badge/Play-Narpati_Quest-c9a24a?style=for-the-badge&logo=vercel&logoColor=white&labelColor=1d1926" alt="Narpati Quest live" /></a>
 </p>
 
-<br/>
+<p align="center"><a href="#featured-work">Featured work</a> · <a href="#research">Research</a> · <a href="#team--organisation-work">Teams</a> · <a href="#toolbox">Toolbox</a> · <a href="https://aryarefman.github.io/#contact">Contact</a></p>
 
 <table>
   <tr>
