@@ -17,7 +17,7 @@
 <table>
   <tr>
     <td width="36%" align="center" valign="top">
-      <img src="assets/arya.jpg" width="260" alt="Arya standing in front of a waterfall" />
+      <img src="assets/arya.jpg" width="260" alt="Arya on a rooftop terrace in the city at dusk" />
     </td>
     <td width="64%" valign="top">
       <h3>About me</h3>
@@ -192,7 +192,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/footer-dark.gif" />
   <source media="(prefers-color-scheme: light)" srcset="assets/footer-light.gif" />
-  <img src="assets/footer-dark.gif" width="100%" alt="Thanks for stopping by, next to a rotating low-poly globe with a moon, a satellite and orbiting data packets" />
+  <img src="assets/footer-dark.gif" width="100%" alt="Thanks for stopping by. Arya stands next to a rotating low-poly globe with a moon, a satellite and orbiting data packets" />
 </picture>
 <sub>3D scenes and device mockups are made with three.js and rendered frame by frame. Source: <a href="assets/src">assets/src</a></sub>
 </div>

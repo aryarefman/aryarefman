@@ -64,6 +64,7 @@
   .foot-copy .small { font-size: 16px; color: var(--muted); margin-top: 10px; }
   .foot-copy .small b { color: var(--decide); font-weight: 600; }
   .foot-copy .links { font-size: 13px; color: var(--muted); margin-top: 22px; letter-spacing: 0.06em; }
+  .foot-me { position: absolute; bottom: 28px; left: 650px; height: 356px; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.3)); }
 </style>
 </head>
 <body>
@@ -129,7 +130,8 @@ const overlays = {
       <div class="small mono">Open to collaboration, research and hackathons.</div>
       <div class="small mono"><b>Let's build something.</b></div>
       <div class="links mono">linkedin.com/in/aryarefman · arya445refman@gmail.com</div>
-    </div>`,
+    </div>
+    <img class="foot-me" src="me-waterfall.png" alt="" />`,
   metrics: `
     <div class="frame"></div>
     <div class="heading mono">BY THE NUMBERS</div>
@@ -745,6 +747,7 @@ window.renderAt = (t) => {
   return true;
 };
 await document.fonts.ready;
+await Promise.all([...document.images].map((img) => img.decode()));
 window.renderAt(0);
 window.READY = true;
 </script>

@@ -21,7 +21,7 @@ from playwright.sync_api import sync_playwright
 SRC = Path(__file__).resolve().parent
 ASSETS = SRC.parent
 # name: (width, height, frames per second)
-SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 20), "metrics": (1280, 400, 25), "footer": (1280, 300, 20)}
+SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 20), "metrics": (1280, 400, 25), "footer": (1280, 420, 20)}
 # name: (width, height)
 SHOWCASE = {"jagapadi": (1600, 760), "helaloka": (1200, 680), "narpati": (1200, 680), "aromasys": (1000, 640), "skyopt": (1000, 640), "siews": (1000, 640), "soc": (1000, 640)}
 LAUNCH_ARGS = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
