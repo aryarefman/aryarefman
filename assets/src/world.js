@@ -395,6 +395,20 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       sat.rotation.set(0.3, -a, 0.2);
     });
 
+    // --- islanders: one walks the path with a dog, one waves from beside the racks
+    {
+      const walker = figure({ shirt: "#ffb454", pants: "#2c3a52", skin: "#c98f6a" });
+      walker.g.scale.setScalar(1.25); world.add(walker.g);
+      const dog = fox(); dog.scale.setScalar(1.1); dog.traverse((o) => { if (o.isMesh && o.material.color && o.material.color.getHex() === 0xd8642a) o.material = smooth("#c8a070"); });
+      world.add(dog);
+      const hc = hub(255, 1.25);
+      animators.push(circleWalk(null, walker.g, hc.x, hc.z, 0.38, 1, 0, (p) => walkPose(walker, TAU * p * 6)));
+      animators.push(circleWalk(null, dog, hc.x, hc.z, 0.38, 1, -0.07));
+      const waver = figure({ shirt: "#8b9cff", pants: "#2a2f45", skin: "#e2b08c", hair: "#3a2a1c" });
+      waver.g.scale.setScalar(1.25); const wp = hub(60, 1.35); waver.g.position.set(wp.x, 0, wp.z); waver.g.rotation.y = 0.4; world.add(waver.g);
+      animators.push((p) => { waver.arms[0].rotation.z = 0.3 + Math.max(0, Math.sin(TAU * p * 2)) * 2.0; waver.head.rotation.y = Math.sin(TAU * p) * 0.3; });
+    }
+
     // --- floating rocks
     for (let i = 0; i < 6; i++) {
       const rock = mesh(new THREE.DodecahedronGeometry(0.1 + r() * 0.13, 0), mat(i % 2 ? C.rock : C.rock2));
@@ -622,24 +636,245 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     return g;
   }
 
+  // ---------- tropical palm: curved ringed trunk, arching fronds with drooping leaflets, coconut cluster ----------
   function palm(r, x, z, s) {
     const g = new THREE.Group();
-    const lean = (r() - 0.5) * 0.5;
-    for (let i = 0; i < 6; i++) {
-      const seg = mesh(new THREE.CylinderGeometry(0.045 * s, 0.055 * s, 0.17 * s, 6), mat(new THREE.Color("#8a6a4a")));
-      seg.position.set(lean * i * 0.05 * s, (0.09 + i * 0.16) * s, 0); seg.rotation.z = -lean * 0.4; g.add(seg);
+    const H = 1.2 * s, lx = (r() - 0.5) * 0.7, lz = (r() - 0.5) * 0.7;
+    const curve = new THREE.CatmullRomCurve3([0, 0.35, 0.7, 1].map((t) => new THREE.Vector3(lx * t * t * H, t * H, lz * t * t * H)));
+    const SEG = 48, RAD = 10;
+    const trunkGeo = new THREE.TubeGeometry(curve, SEG, 0.05 * s, RAD, false);
+    const tp = trunkGeo.attributes.position, centre = new THREE.Vector3(), cols = [];
+    const bark = new THREE.Color("#8a6a48"), ring = new THREE.Color("#5e4632"), c = new THREE.Color();
+    for (let i = 0; i < tp.count; i++) {
+      const t = Math.floor(i / (RAD + 1)) / SEG;
+      curve.getPointAt(t, centre);
+      const band = Math.pow(Math.abs(Math.sin(t * 15 * Math.PI)), 6);          // leaf-scar rings
+      const scale = (1.35 - 0.5 * t) * (1 + 0.14 * band) + (t < 0.06 ? (0.06 - t) * 6 : 0);   // flared base
+      tp.setXYZ(i, centre.x + (tp.getX(i) - centre.x) * scale, tp.getY(i) + 0, centre.z + (tp.getZ(i) - centre.z) * scale);
+      c.copy(bark).lerp(ring, band * 0.8).offsetHSL(0, 0, (hash2(i, t * 9, 3) - 0.5) * 0.05);
+      cols.push(c.r, c.g, c.b);
     }
-    const top = new THREE.Vector3(lean * 0.3 * s, 1.0 * s, 0);
-    for (let k = 0; k < 6; k++) {
-      const frond = mesh(new THREE.BoxGeometry(0.62 * s, 0.02 * s, 0.13 * s), mat(new THREE.Color(k % 2 ? "#3f9a5c" : "#57b46b")));
-      frond.geometry.translate(0.31 * s, 0, 0);
-      frond.position.copy(top); frond.rotation.set(0, (k / 6) * TAU, -0.45);
-      g.add(frond);
+    trunkGeo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
+    trunkGeo.computeVertexNormals();
+    const trunk = new THREE.Mesh(trunkGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }));
+    trunk.castShadow = true; g.add(trunk);
+    const top = curve.getPointAt(1);
+
+    // fronds: one merged geometry of leaflet strips hanging from arching spines
+    const pos = [], col = [], light = new THREE.Color("#7ccf5a"), deep = new THREE.Color("#2f7a3c"), dry = new THREE.Color("#a8874a");
+    const addTri = (a, b, d, ca, cb, cd) => { pos.push(...a, ...b, ...d); [ca, cb, cd].forEach((k) => col.push(k.r, k.g, k.b)); };
+    const FRONDS = 10;
+    for (let k = 0; k < FRONDS; k++) {
+      const dead = k >= FRONDS - 2;
+      const az = (k / FRONDS) * TAU + r() * 0.3, len = (dead ? 0.55 : 0.75 + r() * 0.15) * s;
+      const rise = dead ? -0.3 : 0.12 + r() * 0.12, droop = dead ? 0.9 : 0.55 + r() * 0.2;
+      const dir = new THREE.Vector3(Math.cos(az), 0, Math.sin(az)), side = new THREE.Vector3(-dir.z, 0, dir.x);
+      const spine = (t) => top.clone().addScaledVector(dir, len * t).add(new THREE.Vector3(0, (rise * Math.sin(t * Math.PI * 0.7) - droop * t * t) * len, 0));
+      const N = 16;
+      for (let j = 0; j < N; j++) {
+        const t0 = j / N, t1 = (j + 1) / N, p0 = spine(t0), p1 = spine(t1);
+        const leaf = (dead ? 0.12 : 0.26) * s * Math.pow(Math.sin(Math.PI * Math.min(1, t0 * 1.05 + 0.05)), 0.7);
+        const cA = (dead ? dry : deep).clone().lerp(dead ? dry : light, t0 * 0.8);
+        [-1, 1].forEach((sd) => {
+          // each leaflet hangs down and sweeps forward a little
+          const tip = p0.clone().addScaledVector(side, sd * leaf * 0.75).addScaledVector(dir, leaf * 0.35).add(new THREE.Vector3(0, -leaf * 0.7, 0));
+          const tipC = cA.clone().lerp(light, 0.35);
+          addTri(p0, p1, tip, cA, cA, tipC);
+        });
+      }
+      // a thin midrib so fronds read from above
+      for (let j = 0; j < N; j++) {
+        const p0 = spine(j / N), p1 = spine((j + 1) / N), w = 0.012 * s;
+        const a = p0.clone().addScaledVector(side, -w), b = p0.clone().addScaledVector(side, w), d = p1.clone().addScaledVector(side, -w), e = p1.clone().addScaledVector(side, w);
+        const mc = dead ? dry : new THREE.Color("#5e8f3a");
+        addTri(a, d, b, mc, mc, mc); addTri(b, d, e, mc, mc, mc);
+      }
     }
-    const coco = mesh(new THREE.SphereGeometry(0.05 * s, 8, 6), mat(new THREE.Color("#6b4a2a")));
-    coco.position.copy(top).add(new THREE.Vector3(0.05 * s, -0.06 * s, 0.04 * s)); g.add(coco);
+    const frondGeo = new THREE.BufferGeometry();
+    frondGeo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    frondGeo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    frondGeo.computeVertexNormals();
+    const fronds = new THREE.Mesh(frondGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, side: THREE.DoubleSide }));
+    fronds.castShadow = true; g.add(fronds);
+    for (let i = 0; i < 4; i++) {
+      const coco = mesh(new THREE.SphereGeometry(0.045 * s, 12, 10), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x6b4a2a : 0x7a8a3a, roughness: 0.6 }));
+      const a = (i / 4) * TAU; coco.position.copy(top).add(new THREE.Vector3(Math.cos(a) * 0.05 * s, -0.06 * s, Math.sin(a) * 0.05 * s)); g.add(coco);
+    }
     g.position.set(x, 0, z);
     return g;
+  }
+
+  // ---------- island life: small people and animals that walk, hop, graze and fly ----------
+  const smooth = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 });
+  function figure(c) {
+    const g = new THREE.Group();
+    const legs = [-1, 1].map((s) => {
+      const pv = new THREE.Group(); pv.position.set(s * 0.024, 0.11, 0);
+      const leg = mesh(new THREE.CapsuleGeometry(0.018, 0.075, 4, 8), smooth(c.pants)); leg.position.y = -0.055; pv.add(leg);
+      const shoe = mesh(new THREE.BoxGeometry(0.03, 0.016, 0.045), smooth(c.shoes || "#2a2a2e")); shoe.position.set(0, -0.105, 0.008); pv.add(shoe);
+      g.add(pv); return pv;
+    });
+    const torso = mesh(new THREE.CapsuleGeometry(0.036, 0.07, 4, 12), smooth(c.shirt)); torso.position.y = 0.17; torso.scale.z = 0.72; g.add(torso);
+    const arms = [-1, 1].map((s) => {
+      const pv = new THREE.Group(); pv.position.set(s * 0.047, 0.205, 0);
+      const arm = mesh(new THREE.CapsuleGeometry(0.013, 0.07, 4, 8), smooth(c.shirt)); arm.position.y = -0.045; pv.add(arm);
+      const hand = mesh(new THREE.SphereGeometry(0.014, 8, 6), smooth(c.skin)); hand.position.y = -0.092; pv.add(hand);
+      g.add(pv); return pv;
+    });
+    const head = mesh(new THREE.SphereGeometry(0.032, 16, 12), smooth(c.skin)); head.position.y = 0.258; g.add(head);
+    const hair = mesh(new THREE.SphereGeometry(0.0345, 16, 8, 0, TAU, 0, Math.PI * 0.55), smooth(c.hair || "#2a1d16")); hair.position.y = 0.26; hair.rotation.x = -0.25; g.add(hair);
+    if (c.hat) {
+      const brim = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.006, 20), smooth(c.hat)); brim.position.y = 0.282; g.add(brim);
+      const crown = mesh(new THREE.CylinderGeometry(0.03, 0.034, 0.03, 16), smooth(c.hat)); crown.position.y = 0.298; g.add(crown);
+    }
+    return { g, legs, arms, head };
+  }
+  function walkPose(f, ph, amt = 0.6) {
+    f.legs.forEach((l, i) => (l.rotation.x = Math.sin(ph + i * Math.PI) * amt));
+    f.arms.forEach((a, i) => (a.rotation.x = -Math.sin(ph + i * Math.PI) * amt * 0.8));
+  }
+  function rabbit(colour) {
+    const g = new THREE.Group(), fur = smooth(colour);
+    const body = mesh(new THREE.SphereGeometry(1, 16, 12), fur); body.scale.set(0.045, 0.042, 0.065); body.position.y = 0.045; g.add(body);
+    const head = mesh(new THREE.SphereGeometry(0.03, 14, 10), fur); head.position.set(0, 0.08, 0.055); g.add(head);
+    [-1, 1].forEach((s) => {
+      const ear = mesh(new THREE.CapsuleGeometry(0.008, 0.045, 4, 8), fur); ear.position.set(s * 0.012, 0.125, 0.045); ear.rotation.set(-0.3, 0, s * 0.18); g.add(ear);
+      const eye = mesh(new THREE.SphereGeometry(0.005, 6, 4), smooth("#0a0a0a")); eye.position.set(s * 0.02, 0.088, 0.078); g.add(eye);
+    });
+    const tail = mesh(new THREE.SphereGeometry(0.016, 10, 8), smooth("#f4f1ea")); tail.position.set(0, 0.06, -0.065); g.add(tail);
+    return g;
+  }
+  function deer() {
+    const g = new THREE.Group(), coat = smooth("#9a6a3e"), dark = smooth("#4a3222");
+    const body = mesh(new THREE.CapsuleGeometry(0.045, 0.13, 6, 12), coat); body.rotation.x = Math.PI / 2; body.position.y = 0.17; g.add(body);
+    [[-0.03, 0.07], [0.03, 0.07], [-0.03, -0.07], [0.03, -0.07]].forEach(([x, z]) => { const leg = mesh(new THREE.CylinderGeometry(0.008, 0.007, 0.15, 6), dark); leg.position.set(x, 0.075, z); g.add(leg); });
+    const neck = new THREE.Group(); neck.position.set(0, 0.2, 0.09); g.add(neck);
+    const n = mesh(new THREE.CapsuleGeometry(0.02, 0.07, 4, 8), coat); n.position.set(0, 0.04, 0.02); n.rotation.x = 0.5; neck.add(n);
+    const head = mesh(new THREE.ConeGeometry(0.028, 0.08, 10), coat); head.rotation.x = Math.PI / 2 + 0.3; head.position.set(0, 0.09, 0.07); neck.add(head);
+    [-1, 1].forEach((s) => {
+      const ant = mesh(new THREE.CylinderGeometry(0.003, 0.004, 0.07, 5), smooth("#d8c8a8")); ant.position.set(s * 0.015, 0.13, 0.05); ant.rotation.z = s * 0.4; neck.add(ant);
+      const tine = mesh(new THREE.CylinderGeometry(0.002, 0.003, 0.03, 4), smooth("#d8c8a8")); tine.position.set(s * 0.03, 0.15, 0.06); tine.rotation.set(0.6, 0, s * 0.2); neck.add(tine);
+      const ear = mesh(new THREE.ConeGeometry(0.01, 0.03, 6), coat); ear.position.set(s * 0.025, 0.11, 0.04); ear.rotation.z = s * 1.0; neck.add(ear);
+    });
+    const tail = mesh(new THREE.SphereGeometry(0.014, 8, 6), smooth("#f2ece0")); tail.position.set(0, 0.2, -0.11); g.add(tail);
+    g.userData.neck = neck;
+    return g;
+  }
+  function fox() {
+    const g = new THREE.Group(), coat = smooth("#d8642a"), white = smooth("#f3eee6"), black = smooth("#1e1612");
+    const body = mesh(new THREE.CapsuleGeometry(0.03, 0.09, 6, 12), coat); body.rotation.x = Math.PI / 2; body.position.y = 0.09; g.add(body);
+    [[-0.02, 0.05], [0.02, 0.05], [-0.02, -0.05], [0.02, -0.05]].forEach(([x, z]) => { const leg = mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.07, 6), black); leg.position.set(x, 0.035, z); g.add(leg); });
+    const head = mesh(new THREE.ConeGeometry(0.03, 0.07, 10), coat); head.rotation.x = Math.PI / 2; head.position.set(0, 0.11, 0.1); g.add(head);
+    [-1, 1].forEach((s) => { const ear = mesh(new THREE.ConeGeometry(0.011, 0.03, 6), black); ear.position.set(s * 0.017, 0.14, 0.085); g.add(ear); });
+    const tail = mesh(new THREE.CapsuleGeometry(0.02, 0.07, 6, 10), coat); tail.position.set(0, 0.08, -0.11); tail.rotation.x = -1.0; g.add(tail);
+    const tip = mesh(new THREE.SphereGeometry(0.018, 10, 8), white); tip.position.set(0, 0.04, -0.15); g.add(tip);
+    return g;
+  }
+  function butterfly(colour) {
+    const g = new THREE.Group();
+    const wingMat = new THREE.MeshStandardMaterial({ color: colour, roughness: 0.5, side: THREE.DoubleSide, emissive: colour, emissiveIntensity: 0.25 });
+    const wings = [-1, 1].map((s) => {
+      const pv = new THREE.Group(); g.add(pv);
+      const w = new THREE.Mesh(new THREE.CircleGeometry(0.035, 12), wingMat); w.scale.set(1, 1.3, 1); w.rotation.x = -Math.PI / 2; w.position.x = s * 0.035; pv.add(w);
+      return pv;
+    });
+    const body = mesh(new THREE.CapsuleGeometry(0.004, 0.03, 4, 6), smooth("#1a1a1a")); body.rotation.x = Math.PI / 2; g.add(body);
+    g.userData.wings = wings;
+    return g;
+  }
+  function crab() {
+    const g = new THREE.Group(), shell = smooth("#d0452c");
+    const body = mesh(new THREE.SphereGeometry(1, 16, 10), shell); body.scale.set(0.05, 0.022, 0.038); body.position.y = 0.03; g.add(body);
+    for (let i = 0; i < 3; i++) [-1, 1].forEach((s) => { const leg = mesh(new THREE.CylinderGeometry(0.004, 0.003, 0.05, 4), shell); leg.position.set(s * 0.05, 0.02, -0.02 + i * 0.02); leg.rotation.z = s * 1.1; g.add(leg); });
+    [-1, 1].forEach((s) => {
+      const claw = mesh(new THREE.SphereGeometry(0.016, 10, 8), shell); claw.scale.set(1, 0.7, 1.3); claw.position.set(s * 0.035, 0.035, 0.05); g.add(claw);
+      const eye = mesh(new THREE.SphereGeometry(0.005, 6, 4), smooth("#111")); eye.position.set(s * 0.012, 0.055, 0.03); g.add(eye);
+    });
+    return g;
+  }
+  function gull() {
+    const g = new THREE.Group(), white = smooth("#f5f5f2"), grey = smooth("#9aa3ad");
+    const body = mesh(new THREE.CapsuleGeometry(0.02, 0.07, 6, 10), white); body.rotation.x = Math.PI / 2; g.add(body);
+    const beak = mesh(new THREE.ConeGeometry(0.006, 0.025, 6), smooth("#f2b22e")); beak.rotation.x = Math.PI / 2; beak.position.z = 0.06; g.add(beak);
+    const wings = [-1, 1].map((s) => {
+      const pv = new THREE.Group(); pv.position.x = s * 0.015; g.add(pv);
+      const w = mesh(new THREE.BoxGeometry(0.12, 0.004, 0.04), grey); w.position.x = s * 0.06; pv.add(w);
+      return pv;
+    });
+    g.userData.wings = wings;
+    return g;
+  }
+  // move `obj` around a circle on the island surface, facing its direction of travel; `n` laps per loop
+  function circleWalk(isle, obj, cx, cz, rad, n, ph, onStep) {
+    return (p) => {
+      const a = TAU * (n * p + ph), x = cx + Math.cos(a) * rad, z = cz + Math.sin(a) * rad;
+      obj.position.set(x, isle ? isle.hAt(x, z) : 0, z);
+      obj.rotation.y = n >= 0 ? -a : -a + Math.PI;
+      if (onStep) onStep(p, a);
+    };
+  }
+  function islandLife(season, g, isle, updates) {
+    const H = (x, z) => isle.hAt(x, z);
+    if (season === "spring") {
+      [["#c9b8a3", -0.55, -0.7, 0.32, 0], ["#f2efe8", -0.35, -0.45, 0.22, 0.5]].forEach(([c, cx, cz, rad, ph]) => {
+        const b = rabbit(c); g.add(b);
+        updates.push(circleWalk(isle, b, cx, cz, rad, 1, ph, (p) => { b.position.y += Math.abs(Math.sin(TAU * (p * 6 + ph))) * 0.07; }));
+      });
+      const angler = figure({ shirt: "#3f6fb8", pants: "#2c3a52", skin: "#d9a27a", hat: "#e8d38a" });
+      angler.g.position.set(-0.2, H(-0.2, 0.45), 0.45); angler.g.rotation.y = Math.PI / 2; g.add(angler.g);
+      const rod = mesh(new THREE.CylinderGeometry(0.003, 0.004, 0.4, 5), smooth("#5a3a20")); rod.position.set(0.05, 0.25, 0.13); rod.rotation.x = 0.9; angler.arms[1].add(rod);
+      angler.arms[1].rotation.x = -0.9; angler.arms[0].rotation.x = -0.7;
+      updates.push((p) => { angler.arms[1].rotation.x = -0.9 + Math.sin(TAU * p * 2) * 0.05; angler.head.rotation.y = Math.sin(TAU * p) * 0.3; });
+      ["#ffd34f", "#7fd0ff", "#ff8fd0"].forEach((c, i) => {
+        const bf = butterfly(c); g.add(bf);
+        updates.push((p) => {
+          const a = TAU * (p + i / 3), x = Math.cos(a) * (0.7 + i * 0.25), z = Math.sin(a * 2) * 0.5 - 0.2;
+          bf.position.set(x, H(x, z) + 0.3 + Math.sin(TAU * p * 4 + i) * 0.08, z); bf.rotation.y = -a;
+          const f = Math.sin(TAU * p * 16 + i) * 1.1; bf.userData.wings[0].rotation.z = f; bf.userData.wings[1].rotation.z = -f;
+        });
+      });
+    }
+    if (season === "summer") {
+      const walker = figure({ shirt: "#ff7a59", pants: "#2f5d8a", skin: "#c98f6a", hair: "#1a120c" });
+      g.add(walker.g);
+      updates.push(circleWalk(isle, walker.g, 0, 0, 1.78, 1, 0.1, (p) => walkPose(walker, TAU * p * 8)));
+      const sunbather = figure({ shirt: "#ffd34f", pants: "#2fb4a8", skin: "#e0a77f", hat: "#f2e6c8" });
+      sunbather.g.position.set(1.35, H(1.35, -0.62), -0.62); sunbather.g.rotation.y = -1.9; g.add(sunbather.g);
+      updates.push((p) => { sunbather.arms[0].rotation.z = 0.2 + Math.max(0, Math.sin(TAU * p * 2)) * 2.2; });   // waving
+      [[1.1, 0.15, 0], [0.6, -1.3, 0.5]].forEach(([cx, cz, ph]) => {
+        const cr = crab(); g.add(cr);
+        updates.push((p) => { const s2 = Math.sin(TAU * (p * 2 + ph)) * 0.18, x = cx + s2, z = cz; cr.position.set(x, H(x, z), z); cr.rotation.y = Math.PI / 2; });
+      });
+      [0, 0.5].forEach((ph, i) => {
+        const gl = gull(); g.add(gl);
+        updates.push((p) => {
+          const a = TAU * (p + ph); gl.position.set(Math.cos(a) * (1.3 + i * 0.3), 1.6 + i * 0.25 + Math.sin(a * 2) * 0.1, Math.sin(a) * (1.3 + i * 0.3)); gl.rotation.set(0, -a, 0.35);
+          const f = Math.sin(TAU * p * 6 + i) * 0.5; gl.userData.wings[0].rotation.z = f; gl.userData.wings[1].rotation.z = -f;
+        });
+      });
+    }
+    if (season === "autumn") {
+      const farmer = figure({ shirt: "#8a3b2a", pants: "#3a3f5a", skin: "#c48a62", hat: "#d9b45a" });
+      const basket = mesh(new THREE.CylinderGeometry(0.035, 0.025, 0.04, 12), smooth("#a87a3a")); basket.position.set(0, -0.09, 0.02); farmer.arms[1].add(basket);
+      g.add(farmer.g);
+      updates.push(circleWalk(isle, farmer.g, 0.45, 0.3, 0.32, 1, 0, (p) => { walkPose(farmer, TAU * p * 6, 0.5); farmer.arms[1].rotation.x = -0.3; }));
+      const d = deer(); d.position.set(-1.25, H(-1.25, 0.65), 0.65); d.rotation.y = 0.8; g.add(d);
+      updates.push((p) => { d.userData.neck.rotation.x = 0.6 + Math.sin(TAU * p) * 0.6; });
+      const fx = fox(); g.add(fx);
+      updates.push(circleWalk(isle, fx, 1.0, 0.55, 0.28, -1, 0.3));
+    }
+    if (season === "winter") {
+      const skater = figure({ shirt: "#d9473f", pants: "#2a2f45", skin: "#e2b08c", hat: "#f4f4f4" });
+      g.add(skater.g);
+      updates.push(circleWalk(null, skater.g, -0.6, 0.55, 0.32, 1, 0, (p) => {
+        skater.g.position.y = H(-0.6, 0.55) + 0.04; skater.g.rotation.z = 0.15;
+        walkPose(skater, TAU * p * 3, 0.35); skater.arms.forEach((a, i) => (a.rotation.z = (i ? -1 : 1) * 0.9));
+      }));
+      const d = deer(); d.position.set(-1.25, H(-1.25, -0.55), -0.55); d.rotation.y = -0.6; g.add(d);
+      updates.push((p) => { d.userData.neck.rotation.x = 0.5 + Math.sin(TAU * p + 1) * 0.55; });
+      const hare = rabbit("#f6f7fa"); g.add(hare);
+      updates.push(circleWalk(isle, hare, 0.15, -1.05, 0.25, 1, 0.2, (p) => { hare.position.y += Math.abs(Math.sin(TAU * p * 5)) * 0.06; }));
+    }
   }
 
   function placeAround(r, count, minD, maxD, avoid, fn) {
@@ -915,7 +1150,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const pond = [0.55, 0.45];
       g.add(pondMesh(isle, ...pond, 0.55, 0.38, hex("#6fd0e6"), { rim: hex("#9aa3a8") }));
       updates.push(stream(isle.group, isle, pond, 0.65, "#6fd0e6", seed));
-      const avoid = [[pond[0], pond[1], 0.75], [1.4, 1.1, 0.5]];
+      const avoid = [[pond[0], pond[1], 0.75], [1.4, 1.1, 0.5], [-0.5, -0.6, 0.62], [-0.2, 0.45, 0.3]];
       spots(r, isle, 6, 0.25, 0.85, avoid, 0.6).forEach(([x, z]) => plant(g, isle, leafyTree(r, 0.8 + r() * 0.35, hex("#5a3a30"), [hex("#ffb7d5"), hex("#ff9cc6"), hex("#ffd1e4"), hex("#f7a8cf")]), x, z));
       scatter(g, isle, 520, tuftGeo, [hex("#5fae4f"), hex("#79c25e"), hex("#9ad46d")], seed + 1, { avoid: [[pond[0], pond[1], 0.62]] });
       const flowerGeo = new THREE.IcosahedronGeometry(0.03, 0);
@@ -929,6 +1164,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const petal = new THREE.PlaneGeometry(0.06, 0.045);
       const petalMat = new THREE.MeshBasicMaterial({ color: 0xffb7d5, side: THREE.DoubleSide });
       updates.push(fallers(g, 30, 2.3, 2.8, () => new THREE.Mesh(petal, petalMat), seed + 1));
+      islandLife("spring", g, isle, updates);
     }
 
     if (season === "summer") {
@@ -964,6 +1200,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const sunCore = mesh(new THREE.IcosahedronGeometry(0.28, 1), new THREE.MeshBasicMaterial({ color: 0xffd27a }), { cast: false, receive: false });
       sunCore.position.copy(sun.position); g.add(sunCore);
       updates.push((p) => sun.scale.setScalar(2.2 + 0.25 * Math.sin(TAU * p * 2)));
+      islandLife("summer", g, isle, updates);
     }
 
     if (season === "autumn") {
@@ -988,7 +1225,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       }
       plant(g, isle, mill, 1.05, -0.75).rotation.y = -0.6;
       updates.push((p) => { hub.rotation.z = -(TAU / 4) * p; });
-      spots(r, isle, 7, 0.35, 0.9, [[field[0], field[1], 0.75], [1.05, -0.75, 0.5]], 0.55).forEach(([x, z]) => plant(g, isle, leafyTree(r, 0.8 + r() * 0.35, hex("#4e342a"), warm[Math.floor(r() * 3)]), x, z));
+      spots(r, isle, 7, 0.35, 0.9, [[field[0], field[1], 0.75], [1.05, -0.75, 0.5], [0.45, 0.3, 0.5], [-1.25, 0.65, 0.3], [1.0, 0.55, 0.42]], 0.55).forEach(([x, z]) => plant(g, isle, leafyTree(r, 0.8 + r() * 0.35, hex("#4e342a"), warm[Math.floor(r() * 3)]), x, z));
       for (let i = 0; i < 3; i++) { const bale = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.22, 12), mat(hex("#e8c46a"))); bale.rotation.z = Math.PI / 2; plant(g, isle, bale, 0.1 + i * 0.28, 0.75 + (i % 2) * 0.18).position.y += 0.13; }
       for (let i = 0; i < 5; i++) { const pk = mesh(new THREE.SphereGeometry(0.08, 10, 8), mat(hex("#ff7a1a"))); pk.scale.set(1.2, 0.8, 1.2); plant(g, isle, pk, -0.2 + (i % 3) * 0.18, 1.2 + Math.floor(i / 3) * 0.16).position.y += 0.06; }
       const scare = new THREE.Group();
@@ -1002,6 +1239,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const leafGeo = new THREE.PlaneGeometry(0.07, 0.05);
       const leafMats = ["#ff8a3d", "#d9472b", "#ffcc4d"].map((c) => new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
       updates.push(fallers(g, 26, 2.2, 2.8, (i) => new THREE.Mesh(leafGeo, leafMats[i % 3]), seed + 2));
+      islandLife("autumn", g, isle, updates);
     }
 
     if (season === "winter") {
@@ -1014,7 +1252,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       for (let i = 0; i < 7; i++) { const a = lr() * TAU, l = 0.2 + lr() * 0.3; cr.push(new THREE.Vector3(lake[0], 0, lake[1]), new THREE.Vector3(lake[0] + Math.cos(a) * l, 0, lake[1] + Math.sin(a) * l * 0.7)); }
       const cracks = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(cr), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 }));
       cracks.position.y = isle.hAt(...lake) + 0.04; g.add(cracks);
-      spots(r, isle, 11, 0.3, 0.92, [[lake[0], lake[1], 0.8], [0.8, -0.4, 0.6]], 0.42).forEach(([x, z]) => plant(g, isle, pine(r, 0.85 + r() * 0.5, true), x, z).rotation.y = r() * TAU);
+      spots(r, isle, 11, 0.3, 0.92, [[lake[0], lake[1], 0.8], [0.8, -0.4, 0.6], [-1.25, -0.55, 0.3], [0.15, -1.05, 0.38]], 0.42).forEach(([x, z]) => plant(g, isle, pine(r, 0.85 + r() * 0.5, true), x, z).rotation.y = r() * TAU);
       // cabin with chimney smoke and warm windows
       const cabin = new THREE.Group();
       const body = mesh(new THREE.BoxGeometry(0.62, 0.36, 0.46), mat(hex("#7a4a34"))); body.position.y = 0.18; cabin.add(body);
@@ -1036,6 +1274,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const flake = new THREE.SphereGeometry(0.022, 5, 4);
       const flakeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       updates.push(fallers(g, 46, 2.4, 2.9, () => new THREE.Mesh(flake, flakeMat), seed + 3, false));
+      islandLife("winter", g, isle, updates);
     }
 
     // a dedicated key light per island, so shadows work wherever the island sits
@@ -1090,6 +1329,15 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       return isle.group;
     });
     camera.userData.isles = isles;
+    // one shared shadow light that the page moves to whichever island is in view: per-island lights would change
+    // the light count as islands are shown and hidden, and every change recompiles all shaders
+    isles.forEach((g) => g.children.filter((c) => c.isDirectionalLight).forEach((l) => g.remove(l)));
+    const key = new THREE.DirectionalLight(0xffe2c0, 1.1);
+    key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+    Object.assign(key.shadow.camera, { left: -3.2, right: 3.2, top: 3.2, bottom: -3.2, near: 1, far: 20 });
+    key.shadow.bias = -0.0008; key.shadow.normalBias = 0.02; key.shadow.radius = 3;
+    scene.add(key, key.target);
+    camera.userData.key = key;
   }
 
   function buildFooter() {
