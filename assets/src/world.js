@@ -8,7 +8,8 @@ export const ACCENTS = {
 };
 
 // drift: sway the hero camera within each loop so near and far layers slide past each other (parallax in a GIF).
-export function createWorld({ name, scene, camera, width, height, dark, drift = false }) {
+// stars3d: false leaves the sky to a painted backdrop (see starfield.js) so GIF frames stay small.
+export function createWorld({ name, scene, camera, width, height, dark, drift = false, stars3d = true }) {
   const DARK = dark;
   const W = width, H = height;
   const accents = ACCENTS[dark ? "dark" : "light"];
@@ -99,10 +100,16 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
 
   function stars(count, spread, seed) {
     const r = rng(seed), pos = [];
-    for (let i = 0; i < count; i++) pos.push((r() - 0.5) * spread * 2, (r() - 0.3) * spread, -8 - r() * 20);
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-    return new THREE.Points(g, new THREE.PointsMaterial({ color: DARK ? 0xe9e1ff : 0xb9a99a, size: DARK ? 0.06 : 0.05, transparent: true, opacity: DARK ? 0.75 : 0.5, depthWrite: false }));
+    const group = new THREE.Group();
+    // three layers: many faint far stars, fewer bright near ones (they also parallax differently)
+    [[count * 2, 0.045, 0.6, -14, 18], [count, 0.075, 0.85, -9, 10], [Math.round(count / 6), 0.13, 1, -6, 4]].forEach(([n, size, opacity, z0, dz]) => {
+      const pos = [];
+      for (let i = 0; i < n; i++) pos.push((r() - 0.5) * spread * 2.4, (r() - 0.35) * spread * 1.1, z0 - r() * dz);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      group.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xece8ff, size, transparent: true, opacity, depthWrite: false })));
+    });
+    return group;
   }
 
   function tree(r, x, z, s = 1) {
@@ -143,6 +150,16 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     return g;
   }
 
+  // Sway the camera around its target once per loop; near objects slide past far ones (parallax in a GIF).
+  function swayCamera(target, amountX, amountY) {
+    if (!drift) return;
+    const base = camera.position.clone();
+    animators.push((p) => {
+      camera.position.set(base.x + amountX * Math.sin(TAU * p), base.y + amountY * Math.sin(TAU * p * 2), base.z);
+      camera.lookAt(target);
+    });
+  }
+
   // ---------- scenes ----------
   const animators = [];
   let LOOP = 4;
@@ -153,7 +170,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     const world = new THREE.Group();
     scene.add(world);
     lights();
-    scene.add(stars(DARK ? 260 : 120, 22, 3));
+    if (stars3d) scene.add(stars(DARK ? 260 : 120, 22, 3));
 
     const island = islandBase(3.2, 2.8, 11);
     world.add(island);
@@ -265,7 +282,8 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       const t = THREE.MathUtils.clamp(x * riverDir.x + z * riverDir.z, 0.9, rimR);
       return Math.hypot(x - riverDir.x * t, z - riverDir.z * t);
     };
-    const riverLen = rimR - 0.9;
+    const lip = rimR + 0.24; // the river runs past the rim so the fall clears the soil band
+    const riverLen = lip - 0.9;
     const riverMat = new THREE.MeshStandardMaterial({ color: C.water, roughness: 0.12, metalness: 0.15, emissive: C.water, emissiveIntensity: DARK ? 0.18 : 0.05 });
     const river = mesh(new THREE.BoxGeometry(riverLen, 0.03, 0.3), riverMat, { cast: false });
     river.position.copy(riverDir.clone().multiplyScalar(0.9 + riverLen / 2)).setY(0.015);
@@ -302,7 +320,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
         }`,
       transparent: true, depthWrite: false, side: THREE.DoubleSide,
     }));
-    fall.position.copy(riverDir.clone().multiplyScalar(rimR + 0.02)).setY(0.02);
+    fall.position.copy(riverDir.clone().multiplyScalar(lip)).setY(0.025);
     fall.rotation.y = Math.PI / 2 - RIVER_A;
     world.add(fall);
     animators.push((p) => { fall.material.uniforms.phase.value = p; });
@@ -313,7 +331,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     animators.push((p) => {
       mist.forEach(([m, ph], k) => {
         const u = (p * 2 + ph) % 1;
-        m.position.copy(riverDir.clone().multiplyScalar(rimR + 0.25 + 0.4 * u)).setY(-0.4 - 1.6 * u);
+        m.position.copy(riverDir.clone().multiplyScalar(lip + 0.25 + 0.4 * u)).setY(-0.4 - 1.6 * u);
         m.position.add(new THREE.Vector3(-riverDir.z, 0, riverDir.x).multiplyScalar((k - 2) * 0.08));
         m.material.opacity = (DARK ? 0.22 : 0.4) * Math.sin(Math.PI * u);
       });
@@ -388,22 +406,35 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       });
     }
 
-    // --- a small flock circling the island
-    const birdMat = new THREE.MeshBasicMaterial({ color: DARK ? 0xe9e1ff : 0x3a3448, side: THREE.DoubleSide });
-    const wingGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -0.04), new THREE.Vector3(0, 0, 0.05), new THREE.Vector3(0.2, 0, 0)]);
-    for (let k = 0; k < 5; k++) {
-      const bird = new THREE.Group();
-      const L = new THREE.Mesh(wingGeo, birdMat), R = new THREE.Mesh(wingGeo, birdMat); R.scale.x = -1;
-      bird.add(L, R); scene.add(bird);
-      const ph = k * 0.035, rad = 4.9 + (k % 2) * 0.35, hy = 2.25 + (k % 3) * 0.18;
-      animators.push((p) => {
-        const a = TAU * (p + ph) + 2.2;
-        bird.position.set(Math.cos(a) * rad, hy + 0.1 * Math.sin(TAU * p * 2 + k), Math.sin(a) * rad * 0.55 - 1.0);
-        bird.rotation.y = -a;
-        const flap = 0.55 * Math.sin(TAU * p * 8 + k);
-        L.rotation.z = flap; R.rotation.z = -flap;
-      });
-    }
+    // --- a ringed planet far behind the island
+    const planet = new THREE.Group();
+    const globe = mesh(new THREE.IcosahedronGeometry(1.5, 3), new THREE.MeshStandardMaterial({ color: 0xc9a7ff, roughness: 0.9, flatShading: true }), { cast: false, receive: false });
+    planet.add(globe);
+    const bands = mesh(new THREE.IcosahedronGeometry(1.52, 3), new THREE.MeshStandardMaterial({ color: 0x7f5cd6, roughness: 0.9, flatShading: true, transparent: true, opacity: 0.55 }), { cast: false, receive: false });
+    bands.scale.set(1, 0.35, 1); planet.add(bands);
+    const ring = mesh(new THREE.RingGeometry(2.0, 2.9, 64), new THREE.MeshBasicMaterial({ color: 0xffd6a0, transparent: true, opacity: 0.5, side: THREE.DoubleSide }), { cast: false, receive: false });
+    ring.rotation.x = Math.PI / 2 - 0.35; planet.add(ring);
+    planet.position.set(5.5, -1.3, -12); planet.rotation.z = 0.25; planet.scale.setScalar(0.8);
+    scene.add(planet);
+    animators.push((p) => { globe.rotation.y = TAU * p * 0.25; bands.rotation.y = TAU * p * 0.25; });
+
+    // --- a shooting star once per loop
+    const trailGeo = new THREE.PlaneGeometry(2.2, 0.035); trailGeo.translate(-1.1, 0, 0);
+    const trail = new THREE.Mesh(trailGeo, new THREE.ShaderMaterial({
+      uniforms: { fade: { value: 0 } },
+      vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader: "uniform float fade; varying vec2 vUv; void main() { gl_FragColor = vec4(1.0, 0.95, 0.85, fade * pow(vUv.x, 2.0)); }",
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    }));
+    trail.rotation.z = -0.38; scene.add(trail);
+    const meteor = glowSprite(new THREE.Color("#fff4dc"), 0.5); scene.add(meteor);
+    animators.push((p) => {
+      const u = (p - 0.15) / 0.3, on = u > 0 && u < 1;
+      const x = -9 + 10 * Math.max(0, Math.min(1, u)), y = 5.2 - 3.9 * Math.max(0, Math.min(1, u));
+      trail.position.set(x, y, -6); meteor.position.set(x, y, -6);
+      const f = on ? Math.sin(Math.PI * u) : 0;
+      trail.material.uniforms.fade.value = f; meteor.material.opacity = f;
+    });
 
     // --- two little satellite islands drifting nearby
     [[-5.0, 1.3, -2.6, 51], [4.55, -1.6, -1.6, 53]].forEach(([x, y, z, seed], k) => {
@@ -428,7 +459,6 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
       });
     });
 
-    if (DARK && !drift) { const halo = glowSprite(new THREE.Color("#6b4fd8"), 9); halo.material.opacity = 0.18; halo.position.set(0, -0.6, -2); scene.add(halo); }
 
     animators.push((p) => {
       world.position.y = 0.12 * Math.sin(TAU * p);
@@ -463,7 +493,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
   function buildPillars() {
     LOOP = 6;
     lights();
-    scene.add(stars(DARK ? 140 : 70, 22, 5));
+    if (stars3d) scene.add(stars(DARK ? 140 : 70, 22, 5));
     const spots = [-7.9, 0, 7.9];
     const colors = [C.see, C.defend, C.decide];
     const objects = [];
@@ -536,12 +566,13 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     camera.position.set(0, 2.6, 15.5);
     camera.lookAt(0, 0.1, 0);
     camera.setViewOffset(W, H, 0, H * 0.1, W, H);
+    swayCamera(new THREE.Vector3(0, 0.1, 0), 2.2, 0.35);
   }
 
   function buildMetrics() {
     LOOP = 4;
     lights();
-    scene.add(stars(DARK ? 120 : 60, 22, 13));
+    if (stars3d) scene.add(stars(DARK ? 120 : 60, 22, 13));
     const cols = [[C.defend, 7], [C.defend, 5], [C.see, 6], [C.decide, 4], [C.decide, 5]];
     const cube = new THREE.BoxGeometry(0.42, 0.42, 0.42);
     cols.forEach(([color, n], i) => {
@@ -568,12 +599,13 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     camera.position.set(0, 3.0, 19.5);
     camera.lookAt(0, 1.5, 0);
     camera.setViewOffset(W, H, 0, H * 0.13, W, H);
+    swayCamera(new THREE.Vector3(0, 1.5, 0), 2.6, 0.4);
   }
 
   function buildFooter() {
     LOOP = 6;
     lights();
-    scene.add(stars(DARK ? 120 : 60, 20, 9));
+    if (stars3d) scene.add(stars(DARK ? 120 : 60, 20, 9));
     const globe = new THREE.Group(); scene.add(globe);
     const geo = new THREE.IcosahedronGeometry(1.25, 3);
     const col = [], pos = geo.attributes.position, land = new THREE.Color(C.grass), sea = new THREE.Color(DARK ? "#3a6f9a" : "#5c9cc9"), sand = new THREE.Color(DARK ? "#c9a777" : "#dcc08f");
@@ -625,6 +657,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     camera.position.set(0, 0.6, 11);
     camera.lookAt(0, 0, 0);
     camera.setViewOffset(W, H, -W * 0.3, 0, W, H);
+    swayCamera(new THREE.Vector3(0, 0, 0), 1.4, 0.3);
   }
 
   const build = { hero: buildHero, pillars: buildPillars, metrics: buildMetrics, footer: buildFooter }[name];

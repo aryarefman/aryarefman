@@ -1,18 +1,31 @@
 <!doctype html>
 <!--
-  3D device mockups for the featured projects, rendered as transparent PNG stills by render.py.
-  Query: ?id=jagapadi|aromasys|skyopt|siews|soc   Screens and logos come from ./projects.
+  3D device mockups for the featured projects, rendered as looping GIFs by render.py.
+  Query: ?id=jagapadi|helaloka|narpati|aromasys|skyopt|siews|soc&theme=dark|light   Screens and logos come from ./projects.
+  The camera sways around the devices once per loop while logos and mascots float, so near and far layers
+  slide past each other (parallax). The page exposes window.renderAt(t) and window.LOOP like scene.html.
 -->
 <html>
 <head>
 <meta charset="utf-8" />
 <style>
   * { margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+  :root { --line: rgba(220, 210, 255, 0.16); }
+  :root[data-theme="light"] { --bg: #f5f0e8; --bg2: #ebe3d6; --line: rgba(29, 25, 38, 0.12); }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(40% 55% at 78% 30%, rgba(124, 77, 255, 0.28) 0%, transparent 70%),
+      radial-gradient(35% 50% at 62% 85%, rgba(0, 170, 190, 0.18) 0%, transparent 70%),
+      radial-gradient(30% 45% at 12% 15%, rgba(255, 92, 170, 0.12) 0%, transparent 70%),
+      radial-gradient(120% 140% at 70% 45%, #120d2a 0%, #05050f 65%);
+  }
   canvas { display: block; width: 100% !important; height: 100% !important; }
+  .frame { position: absolute; inset: 12px; border: 1px solid var(--line); border-radius: 18px; pointer-events: none; }
 </style>
 </head>
 <body>
+<div class="frame"></div>
 <script type="importmap">
   {
     "imports": {
@@ -25,8 +38,15 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { paintStars } from "./starfield.js";
 
-const ID = new URLSearchParams(location.search).get("id") || "jagapadi";
+const params = new URLSearchParams(location.search);
+const ID = params.get("id") || "jagapadi";
+const DARK = (params.get("theme") || "dark") === "dark";
+document.documentElement.dataset.theme = DARK ? "dark" : "light";
+const TAU = Math.PI * 2;
+const LOOP = 4;
+const animators = [];
 const W = innerWidth, H = innerHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -54,7 +74,8 @@ key.shadow.radius = 6; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
 scene.add(hemi, key);
 
 // Soft shadow on an invisible floor so the PNG stays transparent.
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.22 }));
+paintStars(ID.length * 131);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: DARK ? 0.35 : 0.2 }));
 floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
 scene.add(floor);
 
@@ -219,61 +240,104 @@ function shield(color) {
   longArm.position.set(0.1, 0.06, 0.13); longArm.rotation.z = -0.6; g.add(longArm);
   return cast(g);
 }
-function view(pos, target) { camera.position.set(...pos); camera.lookAt(...target); }
+function view(pos, target) {
+  const t = new THREE.Vector3(...target), base = new THREE.Vector3(...pos).sub(t);
+  const r = Math.hypot(base.x, base.z), a0 = Math.atan2(base.x, base.z);
+  animators.push((p) => {
+    const a = a0 + 0.14 * Math.sin(TAU * p);
+    camera.position.set(t.x + Math.sin(a) * r, t.y + base.y + 0.25 * Math.sin(TAU * p * 2), t.z + Math.cos(a) * r);
+    camera.lookAt(t);
+  });
+}
+// Bob an object up and down and rock it a little; `spin` adds a full turn per loop (for coins).
+function float(obj, { amp = 0.12, phase = 0, rock = 0.06, spin = false } = {}) {
+  const y = obj.position.y, rot = obj.rotation.clone();
+  scene.add(obj);
+  animators.push((p) => {
+    obj.position.y = y + amp * Math.sin(TAU * (p + phase));
+    obj.rotation.set(rot.x, rot.y + (spin ? TAU * p : rock * Math.sin(TAU * (p + phase))), rot.z + rock * 0.5 * Math.cos(TAU * (p + phase)));
+  });
+  return obj;
+}
 
 // ---------- compositions ----------
 const builds = {
   async jagapadi() {
     const [landing, mobile, logo] = await Promise.all([load("projects/jagapadi-landing.jpg"), load("projects/jagapadi-mobile.jpg"), load("projects/jagapadi-logo.png")]);
     const lap = laptop(landing); lap.position.set(-0.9, 0, 0); lap.rotation.y = 0.22; scene.add(lap);
-    const ph = phone(mobile); ph.position.set(2.75, 1.24, 0.9); ph.rotation.set(-0.12, -0.38, 0); scene.add(ph);
-    const c = coin(logoFace(logo.image, "#f6f1e7", 0.64), 0xc9a45c); c.position.set(-3.6, 2.9, 0.6); c.rotation.set(0.1, 0.42, -0.08); scene.add(c);
+    const ph = phone(mobile); ph.position.set(2.75, 1.24, 0.9); ph.rotation.set(-0.12, -0.38, 0); float(ph, { amp: 0.07, phase: 0.25, rock: 0.04 });
+    const c = coin(logoFace(logo.image, "#f6f1e7", 0.64), 0xc9a45c); c.position.set(-3.6, 2.9, 0.6); c.rotation.set(0.1, 0.42, -0.08); float(c, { amp: 0.1, rock: 0.35 });
     view([1.4, 3.4, 11.2], [0.25, 1.2, 0]);
   },
   async helaloka() {
     const [landing, map, logo] = await Promise.all([load("projects/helaloka-landing.jpg"), load("projects/helaloka-map.jpg"), load("projects/helaloka-logo.png")]);
     const lap = laptop(landing); lap.rotation.y = 0.26; lap.position.x = -0.5; scene.add(lap);
-    const win = windowPanel(map, 2.6, "HELALOKA · sebaran asap", true); win.position.set(2.3, 1.5, 1.0); win.rotation.y = -0.42; scene.add(win);
-    const c = coin(logoFace(logo.image, "#1f2b26", 0.62), 0xd9c48a); c.position.set(-3.1, 3.0, 0.6); c.rotation.set(0.08, 0.45, -0.06); scene.add(c);
+    const win = windowPanel(map, 2.6, "HELALOKA · sebaran asap", true); win.position.set(2.3, 1.5, 1.0); win.rotation.y = -0.42; float(win, { amp: 0.08, phase: 0.5, rock: 0.03 });
+    const c = coin(logoFace(logo.image, "#1f2b26", 0.62), 0xd9c48a); c.position.set(-3.1, 3.0, 0.6); c.rotation.set(0.08, 0.45, -0.06); float(c, { amp: 0.1, rock: 0.35 });
     view([1.0, 3.4, 11.6], [0.1, 1.4, 0]);
   },
   async narpati() {
     const [landing, play, logo] = await Promise.all([load("projects/narpati-landing.jpg"), load("projects/narpati-play.jpg"), load("projects/narpati-logo.png")]);
     const lap = laptop(landing); lap.rotation.y = -0.24; lap.position.x = 0.4; scene.add(lap);
-    const win = windowPanel(play, 2.6, "Narpati Quest · Dalang AI", true); win.position.set(-2.35, 1.45, 1.0); win.rotation.y = 0.42; scene.add(win);
-    const c = coin(logoFace(logo.image, "#17130d", 0.7), 0xc9a24a); c.position.set(3.0, 3.0, 0.6); c.rotation.set(0.08, -0.45, 0.06); scene.add(c);
+    const win = windowPanel(play, 2.6, "Narpati Quest · Dalang AI", true); win.position.set(-2.35, 1.45, 1.0); win.rotation.y = 0.42; float(win, { amp: 0.08, phase: 0.5, rock: 0.03 });
+    const c = coin(logoFace(logo.image, "#17130d", 0.7), 0xc9a24a); c.position.set(3.0, 3.0, 0.6); c.rotation.set(0.08, -0.45, 0.06); float(c, { amp: 0.1, rock: 0.35 });
     view([-1.0, 3.4, 11.6], [-0.1, 1.4, 0]);
+  },
+  async algoverse() {
+    const [landing, logo] = await Promise.all([load("projects/algoverse-landing.jpg"), load("projects/algoverse-logo.png")]);
+    const lap = laptop(landing); lap.rotation.y = 0.24; lap.position.x = -0.3; scene.add(lap);
+    const c = coin(logoFace(logo.image, "#0b1120", 0.86), 0x8b5cf6); c.position.set(-3.0, 2.9, 0.6); c.rotation.set(0.08, 0.45, -0.06); float(c, { amp: 0.1, rock: 0.35 });
+    // a little AR binary tree floating beside the laptop
+    const tree = new THREE.Group();
+    const nodes = [[0, 1.1], [-0.55, 0.45], [0.55, 0.45], [-0.85, -0.2], [-0.25, -0.2], [0.85, -0.2]];
+    const cols = [0x14b8a6, 0x8b5cf6, 0xf59e0b, 0x14b8a6, 0x8b5cf6, 0xf59e0b];
+    nodes.forEach(([x, y], i) => {
+      const n = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 16), new THREE.MeshStandardMaterial({ color: cols[i], emissive: cols[i], emissiveIntensity: 0.5, roughness: 0.3 }));
+      n.position.set(x, y, 0); n.castShadow = true; tree.add(n);
+    });
+    const edges = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5]].flatMap(([a, b]) => [new THREE.Vector3(...nodes[a], 0), new THREE.Vector3(...nodes[b], 0)]);
+    tree.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(edges), new THREE.LineBasicMaterial({ color: 0xe2e8f0 })));
+    tree.position.set(2.85, 1.9, 0.8); tree.rotation.y = -0.4;
+    float(tree, { amp: 0.14, phase: 0.35, rock: 0.15 });
+    view([1.1, 3.4, 10.6], [0.2, 1.35, 0]);
   },
   async aromasys() {
     const [landing, logo] = await Promise.all([load("projects/aromasys-landing.jpg"), load("projects/aromasys-logo.png")]);
     const lap = laptop(landing); lap.rotation.y = -0.28; scene.add(lap);
-    const c = coin(logoFace(logo.image, "#f3f6ec", 0.78), 0x5d8f2e); c.position.set(2.65, 2.75, 0.7); c.rotation.set(0.08, -0.5, 0.1); scene.add(c);
+    const c = coin(logoFace(logo.image, "#f3f6ec", 0.78), 0x5d8f2e); c.position.set(2.65, 2.75, 0.7); c.rotation.set(0.08, -0.5, 0.1); float(c, { amp: 0.1, rock: 0.35 });
     view([-1.6, 3.5, 9.6], [0.3, 1.25, 0]);
   },
   async skyopt() {
     const [landing, eagle, wolf] = await Promise.all([load("projects/skyopt-landing.jpg"), load("projects/skyopt-eagle.png"), load("projects/skyopt-wolf.png")]);
     const lap = laptop(landing); lap.rotation.y = 0.18; scene.add(lap);
-    const e = billboard(eagle, 1.15); e.position.set(-2.55, 2.75, 0.4); e.rotation.y = 0.3; scene.add(e);
-    const w = billboard(wolf, 1.25); w.position.set(2.75, 0.62, 0.85); w.rotation.y = -0.35; scene.add(w);
+    const e = billboard(eagle, 1.15); e.position.set(-2.55, 2.75, 0.4); e.rotation.y = 0.3; float(e, { amp: 0.16 });
+    const w = billboard(wolf, 1.25); w.position.set(2.75, 0.62, 0.85); w.rotation.y = -0.35; float(w, { amp: 0.06, phase: 0.4 });
     view([1.3, 3.4, 9.8], [0, 1.25, 0]);
   },
   async siews() {
     const [det] = await Promise.all([load("projects/siews-detect.jpg")]);
     const mon = monitor(det, det.image.width / det.image.height); mon.rotation.y = 0.24; scene.add(mon);
-    const c = coin(siewsLogo(), 0xd97706); c.position.set(-2.75, 3.35, 0.6); c.rotation.set(0.08, 0.5, -0.06); scene.add(c);
+    const c = coin(siewsLogo(), 0xd97706); c.position.set(-2.75, 3.35, 0.6); c.rotation.set(0.08, 0.5, -0.06); float(c, { amp: 0.1, rock: 0.35 });
     view([1.2, 3.6, 10.6], [0.2, 1.75, 0]);
   },
   async soc() {
     const [tg, wf] = await Promise.all([load("projects/soc-telegram.jpg"), load("projects/soc-workflow.png")]);
     const flow = windowPanel(wf, 3.6, "Shuffle · DDoS workflow", true); flow.position.set(-1.25, 2.55, -0.8); flow.rotation.set(0, 0.28, 0); scene.add(flow);
-    const chat = windowPanel(tg, 2.2, "SOC-Bot · Telegram"); chat.position.set(1.45, 1.75, 0.6); chat.rotation.set(0, -0.3, 0); scene.add(chat);
-    const sh = shield(0xe5534b); sh.position.set(-2.55, 0.85, 1.1); sh.rotation.set(0, 0.5, 0); sh.scale.setScalar(1.05); scene.add(sh);
+    const chat = windowPanel(tg, 2.2, "SOC-Bot · Telegram"); chat.position.set(1.45, 1.75, 0.6); chat.rotation.set(0, -0.3, 0); float(chat, { amp: 0.08, phase: 0.5, rock: 0.03 });
+    const sh = shield(0xe5534b); sh.position.set(-2.55, 0.85, 1.1); sh.rotation.set(0, 0.5, 0); sh.scale.setScalar(1.05); float(sh, { amp: 0.14, phase: 0.3 });
     view([0.2, 2.9, 10.2], [0, 1.55, 0]);
   },
 };
 
 await builds[ID]();
-renderer.render(scene, camera);
+window.LOOP = LOOP;
+window.renderAt = (t) => {
+  const p = ((t % LOOP) + LOOP) % LOOP / LOOP;
+  animators.forEach((fn) => fn(p));
+  renderer.render(scene, camera);
+  return true;
+};
+window.renderAt(0);
 window.READY = true;
 </script>
 </body>

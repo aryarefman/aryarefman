@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0f0c18; --bg2: #1c1530; --ink: #f4ede4; --muted: #a59cb8; --line: rgba(244, 237, 228, 0.12);
+    --bg: #05050f; --bg2: #120d2a; --ink: #f4f1ff; --muted: #a9a3c9; --line: rgba(220, 210, 255, 0.16);
     --see: #ffb454; --defend: #ff6b6b; --decide: #8b9cff;
   }
   :root[data-theme="light"] {
@@ -21,7 +21,11 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; overflow: hidden; }
   body {
-    background: radial-gradient(120% 140% at 72% 45%, var(--bg2) 0%, var(--bg) 62%);
+    background:
+      radial-gradient(40% 55% at 78% 30%, rgba(124, 77, 255, 0.28) 0%, transparent 70%),
+      radial-gradient(35% 50% at 62% 85%, rgba(0, 170, 190, 0.18) 0%, transparent 70%),
+      radial-gradient(30% 45% at 12% 15%, rgba(255, 92, 170, 0.12) 0%, transparent 70%),
+      radial-gradient(120% 140% at 70% 45%, #120d2a 0%, #05050f 65%);
     color: var(--ink); font-family: "Bricolage Grotesque", system-ui, sans-serif;
   }
   #stage { position: absolute; inset: 0; }
@@ -77,6 +81,7 @@
 <script type="module">
 import * as THREE from "three";
 import { createWorld } from "./world.js";
+import { paintStars } from "./starfield.js";
 
 const params = new URLSearchParams(location.search);
 const SCENE = params.get("scene") || "hero";
@@ -142,11 +147,16 @@ document.getElementById("stage").appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
 
-const world = createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: SCENE === "hero" });
+const world = createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: true, stars3d: SCENE === "hero" });
+if (SCENE !== "hero") paintStars(SCENE.length * 977);
 window.LOOP = world.loop;
 window.renderAt = (t) => {
   const p = ((t % world.loop) + world.loop) % world.loop / world.loop;
   world.update(p);
+  // HTML layers sway with the camera too (data-depth = pixels at full swing; negative = in front)
+  document.querySelectorAll("[data-depth]").forEach((el) => {
+    el.style.transform = `translateX(${(parseFloat(el.dataset.depth) * Math.sin(Math.PI * 2 * p)).toFixed(2)}px)`;
+  });
   renderer.render(scene, camera);
   return true;
 };

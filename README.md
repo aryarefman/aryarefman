@@ -1,45 +1,34 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.gif" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/hero-light.gif" />
-  <img src="assets/hero-dark.gif" width="100%" alt="Arya Bisma Putra Refman, IT student at ITS Surabaya, next to a rotating 3D floating island with a camera tower, a shielded core, server racks, a waterfall and a wind turbine" />
-</picture>
+<img src="assets/hero-dark.gif" width="100%" alt="Arya Bisma Putra Refman, IT student at ITS Surabaya, next to a low-poly floating island drifting through space with a camera tower, a shielded core, server racks, a waterfall and a ringed planet" />
 
 </div>
 
 <p align="center">
-  <a href="https://aryarefman.github.io/"><img src="https://img.shields.io/badge/✦_Explore_the_3D_portfolio-aryarefman.github.io-1d1926?style=for-the-badge&labelColor=ffb454&color=1d1926" alt="Explore the 3D portfolio at aryarefman.github.io" height="34" /></a>
+  <a href="https://aryarefman.github.io/"><img src="https://img.shields.io/badge/✦_Explore_the_3D_portfolio-aryarefman.github.io-12102a?style=for-the-badge&labelColor=ffb454&color=12102a" alt="Explore the 3D portfolio at aryarefman.github.io" height="34" /></a>
 </p>
 
 <p align="center">
-  <a href="https://www.linkedin.com/in/aryarefman"><img src="https://img.shields.io/badge/LinkedIn-aryarefman-8b9cff?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=1d1926" alt="LinkedIn" /></a> <a href="mailto:arya445refman@gmail.com"><img src="https://img.shields.io/badge/Email-arya445refman-ff6b6b?style=for-the-badge&logo=gmail&logoColor=white&labelColor=1d1926" alt="Email" /></a> <a href="https://helaloka.up.railway.app/"><img src="https://img.shields.io/badge/Live-HELALOKA-ffb454?style=for-the-badge&logo=railway&logoColor=white&labelColor=1d1926" alt="HELALOKA live" /></a> <a href="https://web-sable-three-46.vercel.app"><img src="https://img.shields.io/badge/Play-Narpati_Quest-c9a24a?style=for-the-badge&logo=vercel&logoColor=white&labelColor=1d1926" alt="Narpati Quest live" /></a>
+  <a href="https://www.linkedin.com/in/aryarefman"><img src="https://img.shields.io/badge/LinkedIn-aryarefman-8b9cff?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=12102a" alt="LinkedIn" /></a> <a href="mailto:arya445refman@gmail.com"><img src="https://img.shields.io/badge/Email-arya445refman-ff6b6b?style=for-the-badge&logo=gmail&logoColor=white&labelColor=12102a" alt="Email" /></a> <a href="https://semoga-kami-beruntung.vercel.app/"><img src="https://img.shields.io/badge/Live-AlgoVerse-14b8a6?style=for-the-badge&logo=vercel&logoColor=white&labelColor=12102a" alt="AlgoVerse live" /></a> <a href="https://helaloka.up.railway.app/"><img src="https://img.shields.io/badge/Live-HELALOKA-ffb454?style=for-the-badge&logo=railway&logoColor=white&labelColor=12102a" alt="HELALOKA live" /></a>
 </p>
 
-<p align="center"><a href="#featured-work">Featured work</a> · <a href="#research">Research</a> · <a href="#team--organisation-work">Teams</a> · <a href="#toolbox">Toolbox</a> · <a href="https://aryarefman.github.io/#contact">Contact</a></p>
+<p align="center"><a href="#awards">Awards</a> · <a href="#featured-work">Featured work</a> · <a href="#research">Research</a> · <a href="#team--organisation-work">Teams</a> · <a href="#toolbox">Toolbox</a></p>
 
 <table>
   <tr>
-    <td width="36%" align="center" valign="top">
-      <img src="assets/arya.jpg" width="260" alt="Arya on a rooftop terrace in the city at dusk" />
+    <td width="38%" align="center" valign="bottom">
+      <img src="assets/arya-city.png" width="270" alt="Arya smiling in a white cap and green sweater" />
     </td>
-    <td width="64%" valign="top">
+    <td width="62%" valign="top">
       <h3>About me</h3>
       <p>
         I study <b>Information Technology at Institut Teknologi Sepuluh Nopember (ITS)</b> in Surabaya, Indonesia.
         I like building systems that close the loop: they <b>see</b> what is happening, <b>defend</b> what matters, and help people <b>decide</b> what to do next.
       </p>
       <p>
-        Most of my work is for real people under pressure: farmers watching for drought, towns in the path of volcanic ash,
-        refinery crews near red zones, and SOC teams facing a flood of packets.
+        Most of my work is for people under pressure: farmers watching for drought, towns in the path of volcanic ash,
+        refinery crews near red zones, students learning algorithms, and SOC teams facing a flood of packets.
       </p>
-      <h4>Hackathons in 2026</h4>
-      <ul>
-        <li><b>UM Metro Hackathon</b> · Jagapadi, satellite rice-field monitoring</li>
-        <li><b>JOINTS UGM</b> · HELALOKA, volcanic ash and wildfire smoke forecasts</li>
-        <li><b>ForgeHacks Online</b> · Standbai / UdaraSiaga, smoke and ash alerts (AI + Climate)</li>
-        <li><b>IOC Digital Hackathon</b> · SIEWS+, AI early warning for oil and gas</li>
-      </ul>
       <p>
         <b>Now:</b> LLM agent security · JEPA world models · cloud scheduling<br/>
         <b>Open to:</b> research collaboration, internships and hackathon teams
@@ -48,20 +37,20 @@
   </tr>
 </table>
 
-<br/>
+## Awards
+
+| | Result | Project | Competition |
+| :---: | :--- | :--- | :--- |
+| 🥈 | **2nd place** | [AlgoVerse](https://semoga-kami-beruntung.vercel.app/), AR visualisation of data structures and algorithms | [IT Fest 2026](https://itfest.ub.ac.id/home), Universitas Brawijaya |
+| 🥈 | **2nd place** | [AromaSys](https://cyberhack-digendong-bokem.vercel.app/), warehouse intelligence platform | Hackathon, 2026 |
+| 🏅 | **Finalist** | [SIEWS+ 5.0](https://github.com/aryarefman/migas-siews), AI early warning for oil and gas | IOC Digital Hackathon 2026 |
+| 🏅 | **Finalist** | [Global AQI analysis](https://github.com/aryarefman/analisis-AQI-Dunia), world air-quality data analysis | Data analytics competition |
+| 🚀 | Competed | Jagapadi · HELALOKA · Standbai | UM Metro Hackathon 2026 · JOINTS UGM 2026 · ForgeHacks Online 2026 |
 
 <div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/pillars-dark.gif" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/pillars-light.gif" />
-  <img src="assets/pillars-dark.gif" width="100%" alt="Three rotating 3D objects on floating islands: a camera for perception, a shield for security, and a node graph for systems" />
-</picture>
+<img src="assets/pillars-dark.gif" width="100%" alt="Three rotating 3D objects on floating islands in space: a camera for perception, a shield for security, and a node graph for systems" />
 <br/><br/>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/metrics-dark.gif" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/metrics-light.gif" />
-  <img src="assets/metrics-dark.gif" width="100%" alt="By the numbers: 15.7M SYN-flood packets blocked, under 4 s from detection to block, under 50 ms per frame, about 15% lower makespan, 2,812 papers screened" />
-</picture>
+<img src="assets/metrics-dark.gif" width="100%" alt="By the numbers: 15.7M SYN-flood packets blocked, under 4 s from detection to block, under 50 ms per frame, about 15% lower makespan, 2,812 papers screened" />
 </div>
 
 ## Featured work
@@ -69,7 +58,7 @@
 <table>
   <tr>
     <td colspan="2" align="center">
-      <img src="assets/projects/jagapadi.png" width="88%" alt="Jagapadi landing page on a laptop and phone, with the Jagapadi logo" />
+      <img src="assets/projects/jagapadi-dark.gif" width="92%" alt="Jagapadi landing page on a laptop and phone with the Jagapadi logo, the camera gently orbiting" />
       <h3>Jagapadi · rice fields, watched from orbit</h3>
       <sub><b>UM Metro Hackathon 2026</b> · team of three · <a href="https://github.com/ITHACKITS">ITHACKITS</a></sub>
       <p>Sentinel-1 radar and Sentinel-2 imagery plus weather ensembles feed a water-balance model for fields in Metro, Lampung.<br/>
@@ -80,56 +69,66 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="assets/projects/helaloka.png" width="100%" alt="HELALOKA landing page and smoke-dispersion map" />
-      <h3>HELALOKA</h3>
-      <sub><b>Volcanic ash &amp; wildfire smoke forecasts</b> · JOINTS UGM 2026 · top contributor</sub>
-      <p>One Lagrangian particle engine (RK2) simulates both ash and smoke across Indonesia: 70 volcanoes with MAGMA levels and 36 fire-prone forest and peat areas. Weather ensembles give P5/P50/P95 impact ranges, schools and clinics in the plume, and routes to hospitals outside it.</p>
-      <p><code>JavaScript</code> <code>Python</code> <code>NASA FIRMS</code> <code>MAGMA</code> <code>Weather ensembles</code></p>
-      <a href="https://github.com/nyarikerja/JOINTS2026">Repository</a> · <a href="https://helaloka.up.railway.app/">Live ↗</a>
+      <img src="assets/projects/algoverse-dark.gif" width="100%" alt="AlgoVerse landing page on a laptop with its logo and a floating 3D binary tree" />
+      <h3>AlgoVerse &nbsp;🥈</h3>
+      <sub><b>2nd place · IT Fest 2026, Universitas Brawijaya</b></sub>
+      <p>Data structures and algorithms as interactive 3D objects in Augmented Reality, straight from a phone browser: 7 data structures, 8 algorithms and 3 challenge modes, with step-by-step playback of every comparison and swap.</p>
+      <p><code>WebAR</code> <code>Three.js</code> <code>JavaScript</code> <code>Vercel</code></p>
+      <a href="https://semoga-kami-beruntung.vercel.app/">Live ↗</a> · <a href="https://github.com/MFaqihRidh0/Semoga-Kami-Beruntung">Repository</a>
     </td>
     <td width="50%" valign="top">
-      <img src="assets/projects/narpati.png" width="100%" alt="Narpati Quest landing page and gameplay screen" />
-      <h3>Narpati Quest</h3>
-      <sub><b>AI text RPG in the world of Javanese wayang</b> · lead contributor</sub>
-      <p>An interactive Mahabharata adventure narrated by a "Dalang AI" game master. It works with Gemini, OpenAI, Groq, DeepSeek, OpenRouter or a custom endpoint, and uses retrieval to stay true to the wayang lore. Light and dark themes, playable on phones.</p>
-      <p><code>TypeScript</code> <code>Next.js</code> <code>LLMs</code> <code>RAG</code></p>
-      <a href="https://web-sable-three-46.vercel.app">Play it ↗</a> · <sub>repository is private</sub>
+      <img src="assets/projects/aromasys-dark.gif" width="100%" alt="AromaSys landing page on a laptop with the AromaSys logo" />
+      <h3>AromaSys &nbsp;🥈</h3>
+      <sub><b>2nd place</b> · warehouse intelligence · lead developer</sub>
+      <p>Digital-twin floor plan with live sensor and cold-chain telemetry, Roboflow computer-vision quality control, a Gemini 2.5 Flash operations copilot, 4-role RBAC and FIFO expiry tracking.</p>
+      <p><code>Next.js 16</code> <code>Express 5</code> <code>PostgreSQL</code> <code>Gemini</code> <code>Roboflow</code></p>
+      <a href="https://cyberhack-digendong-bokem.vercel.app/">Live ↗</a> · <a href="https://github.com/aryarefman/cyberhack-digendong-bokem">Repository</a>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="assets/projects/aromasys.png" width="100%" alt="AromaSys landing page on a laptop with the AromaSys logo" />
-      <h3>AromaSys</h3>
-      <sub><b>Warehouse intelligence platform</b> · lead developer</sub>
-      <p>Digital-twin floor plan with live sensor and cold-chain telemetry, Roboflow computer-vision quality control, a Gemini 2.5 Flash operations copilot, 4-role RBAC and FIFO expiry tracking.</p>
-      <p><code>Next.js 16</code> <code>Express 5</code> <code>PostgreSQL</code> <code>Gemini</code> <code>Roboflow</code></p>
-      <a href="https://github.com/aryarefman/cyberhack-digendong-bokem">Repository</a> · <a href="https://cyberhack-digendong-bokem.vercel.app/">Live ↗</a>
-    </td>
-    <td width="50%" valign="top">
-      <img src="assets/projects/siews.png" width="100%" alt="SIEWS+ YOLOv8 detection of helmets and safety vests on a monitor, with the S+ logo" />
-      <h3>SIEWS+ 5.0</h3>
-      <sub><b>AI early warning for oil &amp; gas</b> · IOC Digital Hackathon 2026</sub>
+      <img src="assets/projects/siews-dark.gif" width="100%" alt="SIEWS+ YOLOv8 detection of helmets and safety vests on a monitor, with the S+ logo" />
+      <h3>SIEWS+ 5.0 &nbsp;🏅</h3>
+      <sub><b>Finalist · IOC Digital Hackathon 2026</b></sub>
       <p>YOLOv8 on live RTSP streams checks PPE and detects people inside red-zone polygons in under 50 ms per frame, triggers fail-safe shutdown signals, and pushes alerts over WebSocket and WhatsApp.</p>
       <p><code>Python</code> <code>FastAPI</code> <code>YOLOv8</code> <code>OpenCV</code> <code>Next.js</code></p>
       <a href="https://github.com/aryarefman/migas-siews">Repository</a>
     </td>
+    <td width="50%" valign="top">
+      <img src="assets/projects/helaloka-dark.gif" width="100%" alt="HELALOKA landing page and smoke-dispersion map" />
+      <h3>HELALOKA</h3>
+      <sub><b>JOINTS UGM 2026</b> · volcanic ash &amp; wildfire smoke · top contributor</sub>
+      <p>One Lagrangian particle engine (RK2) simulates both ash and smoke across Indonesia: 70 volcanoes with MAGMA levels and 36 fire-prone forest and peat areas, with P5/P50/P95 impact ranges, clinics in the plume and routes to hospitals outside it.</p>
+      <p><code>JavaScript</code> <code>Python</code> <code>NASA FIRMS</code> <code>MAGMA</code> <code>Ensembles</code></p>
+      <a href="https://helaloka.up.railway.app/">Live ↗</a> · <a href="https://github.com/nyarikerja/JOINTS2026">Repository</a>
+    </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="assets/projects/soc.png" width="100%" alt="SOC-SOAR Shuffle workflow and Telegram auto-block alerts" />
+      <img src="assets/projects/narpati-dark.gif" width="100%" alt="Narpati Quest landing page and gameplay screen with the NQ logo" />
+      <h3>Narpati Quest</h3>
+      <sub><b>AI text RPG in the world of Javanese wayang</b> · lead contributor</sub>
+      <p>An interactive Mahabharata adventure narrated by a "Dalang AI" game master. It works with Gemini, OpenAI, Groq, DeepSeek, OpenRouter or a custom endpoint, and uses retrieval to stay true to the wayang lore.</p>
+      <p><code>TypeScript</code> <code>Next.js</code> <code>LLMs</code> <code>RAG</code></p>
+      <a href="https://web-sable-three-46.vercel.app">Play it ↗</a> · <sub>repository is private</sub>
+    </td>
+    <td width="50%" valign="top">
+      <img src="assets/projects/soc-dark.gif" width="100%" alt="SOC-SOAR Shuffle workflow and Telegram auto-block alerts with a shield" />
       <h3>SOC-SOAR</h3>
       <sub><b>Automated DDoS detection &amp; response</b></sub>
       <p>Custom Wazuh decoders spot SYN-flood state exhaustion, an active-response script drops the attacker with iptables, and Shuffle opens a Jira ticket and posts to Telegram. Detection to block in under 4 seconds, no human in the loop.</p>
       <p><code>Wazuh</code> <code>Shuffle SOAR</code> <code>Jira API</code> <code>Telegram</code> <code>Bash</code></p>
       <a href="https://github.com/aryarefman/soc-soar">Repository</a>
     </td>
-    <td width="50%" valign="top">
-      <img src="assets/projects/skyopt.png" width="100%" alt="Sky Optimizers 3D teaching animation on a laptop with the eagle and wolf mascots" />
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="assets/projects/skyopt-dark.gif" width="62%" alt="Sky Optimizers 3D teaching animation on a laptop with the eagle and wolf mascots" />
       <h3>Sky Optimizers</h3>
       <sub><b>Interactive 3D teaching animation</b></sub>
-      <p>Watch Particle Swarm Optimization and the Grey Wolf Optimizer search the same landscape step by step on floating islands, with a narrated explainer on how both are used in cloud computing. English and Indonesian.</p>
+      <p>Watch Particle Swarm Optimization and the Grey Wolf Optimizer search the same landscape step by step on floating islands,<br/>with a narrated explainer on how both are used in cloud computing. English and Indonesian.</p>
       <p><code>Three.js</code> <code>JavaScript</code> <code>Metaheuristics</code></p>
-      <a href="https://github.com/aryarefman/metaheuristik-pso-gwo">Repository</a> · <a href="https://aryarefman.github.io/metaheuristik-pso-gwo/">Live ↗</a>
+      <a href="https://aryarefman.github.io/metaheuristik-pso-gwo/">Live ↗</a> · <a href="https://github.com/aryarefman/metaheuristik-pso-gwo">Repository</a>
     </td>
   </tr>
 </table>
@@ -162,10 +161,10 @@
 | <img src="assets/src/projects/novapulse-logo.png" width="16" alt="" /> [NovaPulse](https://github.com/aryarefman/grpc-project) | Smart-city backbone with unary, server-streaming and bidirectional gRPC; reroutes traffic when air-quality sensors cross toxic thresholds | Node.js · gRPC · MQTT · Docker |
 | [PEFT Cloud Scheduler](https://github.com/aryarefman/soka-peft-heuristik) | Predict Earliest Finish Time on CloudSim Plus: ~15% lower makespan and 12% less energy than FCFS and Round Robin over 1,000 tasks | Java 21 · CloudSim Plus |
 | [Digital Forensics Casebook](https://github.com/aryarefman/forensik-digital) | Five hash-verified cases: GPT recovery, FAT32 carving, LSB steganography, JPEG trailing data, following ISO/IEC 27037 | Python · Autopsy |
+| [Global AQI analysis](https://github.com/aryarefman/analisis-AQI-Dunia) 🏅 | Exploratory analysis of world air-quality data; finalist | Python · Jupyter |
 | [CampusReport](https://github.com/aryarefman/CampusReport) | Civic issue reporting platform for campus facilities | TypeScript |
 | [WordIT](https://github.com/aryarefman/FP-PemrogramanWebsite-FE-2025) | Game-based learning website ([backend](https://github.com/aryarefman/FP-PemrogramanWebsite-BE-2025)) | TypeScript |
 | [Yayasan ARA network](https://github.com/aryarefman/Final-Project-Komdat-Jarkom) | Network infrastructure design with VLSM/CIDR subnetting | Cisco Packet Tracer |
-| [Global AQI analysis](https://github.com/aryarefman/analisis-AQI-Dunia) | Exploratory analysis of world air-quality data | Python · Jupyter |
 | [Kotlin](https://github.com/aryarefman/aplikasi-kotlin) / [Flutter](https://github.com/aryarefman/aplikasi-flutter) apps | Native Android and cross-platform mobile prototypes | Kotlin · Dart |
 
 </details>
@@ -193,10 +192,6 @@
 <br/>
 
 <div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/footer-dark.gif" />
-  <source media="(prefers-color-scheme: light)" srcset="assets/footer-light.gif" />
-  <img src="assets/footer-dark.gif" width="100%" alt="Thanks for stopping by. Arya stands next to a rotating low-poly globe with a moon, a satellite and orbiting data packets" />
-</picture>
+<img src="assets/footer-dark.gif" width="100%" alt="Thanks for stopping by. Arya smiles next to a rotating low-poly globe with a satellite and orbiting data packets" />
 <sub>3D scenes and device mockups are made with three.js and rendered frame by frame. Source: <a href="assets/src">assets/src</a></sub>
 </div>

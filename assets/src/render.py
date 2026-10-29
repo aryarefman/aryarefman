@@ -1,7 +1,7 @@
 """Render the profile's 3D artwork into assets/.
 
-  scene.html    -> seamless looping GIFs, dark and light (hero, pillars, metrics, footer)
-  showcase.html -> transparent PNG mockups of the featured projects (assets/projects/)
+  scene.html    -> seamless looping GIFs in the outer-space theme (hero, pillars, metrics, footer)
+  showcase.html -> looping GIF mockups of the featured projects (assets/projects/)
 
 Usage:  python assets/src/render.py [name ...]      (default: everything)
 Needs:  pip install playwright pillow && playwright install chromium; ffmpeg on PATH; internet (three.js and fonts from CDNs).
@@ -15,15 +15,15 @@ import tempfile
 import threading
 from pathlib import Path
 
-from PIL import Image
 from playwright.sync_api import sync_playwright
 
 SRC = Path(__file__).resolve().parent
 ASSETS = SRC.parent
 # name: (width, height, frames per second)
-SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 20), "metrics": (1280, 400, 25), "footer": (1280, 420, 20)}
+SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 15), "metrics": (1280, 400, 15), "footer": (1280, 420, 15)}
 # name: (width, height)
-SHOWCASE = {"jagapadi": (1600, 760), "helaloka": (1200, 680), "narpati": (1200, 680), "aromasys": (1000, 640), "skyopt": (1000, 640), "siews": (1000, 640), "soc": (1000, 640)}
+SHOWCASE = {"jagapadi": (1120, 540), **{n: (880, 520) for n in ("helaloka", "narpati", "algoverse", "aromasys", "skyopt", "siews", "soc")}}
+SHOWCASE_FPS = 10
 LAUNCH_ARGS = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
 
 
@@ -64,7 +64,7 @@ def encode(frames_dir: Path, fps: int, out: Path):
     )
 
 
-def render_scene(browser, port, name, themes=("dark", "light")):
+def render_scene(browser, port, name, themes=("dark",)):
     w, h, fps = SCENES[name]
     for theme in themes:
         page = open_page(browser, f"http://127.0.0.1:{port}/scene.html?scene={name}&theme={theme}", w, h)
@@ -80,27 +80,21 @@ def render_scene(browser, port, name, themes=("dark", "light")):
         print(f"{out.name}: {count} frames, {out.stat().st_size / 1e6:.2f} MB")
 
 
-def render_showcase(browser, port, name, pad=28):
+def render_showcase(browser, port, name):
     w, h = SHOWCASE[name]
-    page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}", w, h)
-    tmp = Path(tempfile.mkdtemp(prefix=f"showcase-{name}-")) / "shot.png"
-    page.screenshot(path=str(tmp), omit_background=True)
-    page.close()
-    im = Image.open(tmp)
-    # Trim empty transparent margins (ignoring the faintest shadow) and keep a little padding.
-    l, t, r, b = im.getchannel("A").point(lambda a: 255 if a > 10 else 0).getbbox()
-    im = im.crop((max(0, l - pad), max(0, t - pad), min(w, r + pad), min(h, b + pad)))
-    if name != "jagapadi":
-        # Same 16:9 frame for every grid card, so titles line up across the README columns.
-        cw, ch = max(im.width, round(im.height * 16 / 9)), max(im.height, round(im.width * 9 / 16))
-        framed = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
-        framed.paste(im, ((cw - im.width) // 2, (ch - im.height) // 2))
-        im = framed
-    out = ASSETS / "projects" / f"{name}.png"
-    out.parent.mkdir(exist_ok=True)
-    im.save(out, optimize=True)
-    shutil.rmtree(tmp.parent)
-    print(f"projects/{out.name}: {im.size[0]}x{im.size[1]}, {out.stat().st_size / 1e6:.2f} MB")
+    for theme in ("dark",):
+        page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}&theme={theme}", w, h)
+        count = round(page.evaluate("window.LOOP") * SHOWCASE_FPS)
+        tmp = Path(tempfile.mkdtemp(prefix=f"showcase-{name}-{theme}-"))
+        for i in range(count):
+            page.evaluate(f"window.renderAt({i / SHOWCASE_FPS})")
+            page.screenshot(path=str(tmp / f"f{i:04d}.png"))
+        out = ASSETS / "projects" / f"{name}-{theme}.gif"
+        out.parent.mkdir(exist_ok=True)
+        encode(tmp, SHOWCASE_FPS, out)
+        shutil.rmtree(tmp)
+        page.close()
+        print(f"projects/{out.name}: {count} frames, {out.stat().st_size / 1e6:.2f} MB")
 
 
 def main(names):
