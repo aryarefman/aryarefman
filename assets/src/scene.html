@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   3D scenes for the profile README, rendered frame by frame by render.py.
-  Query: ?scene=hero|pillars|footer&theme=dark|light
+  Query: ?scene=hero|pillars|metrics|footer&theme=dark|light
   The page exposes window.renderAt(t) (seconds) and window.LOOP (seconds per seamless loop).
 -->
 <html>
@@ -40,6 +40,17 @@
   .chips { display: flex; gap: 10px; margin-top: 26px; }
   .chip { white-space: nowrap; font-size: 13px; font-weight: 600; padding: 8px 14px 8px 12px; border-radius: 999px; border: 1px solid var(--line); display: flex; align-items: center; gap: 8px; letter-spacing: 0.02em; }
   .chip i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .now { margin-top: 22px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .now b { color: var(--ink); font-weight: 600; }
+  .now .dot { width: 8px; height: 8px; border-radius: 50%; background: #3fbf7f; box-shadow: 0 0 0 4px rgba(63, 191, 127, 0.18); }
+  .corner { position: absolute; right: 40px; bottom: 32px; font-size: 11px; letter-spacing: 0.18em; color: var(--muted); opacity: 0.8; }
+
+  /* metrics */
+  .metric { position: absolute; bottom: 38px; width: 20%; text-align: center; }
+  .metric .val { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; }
+  .metric .lab { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.35; margin-top: 4px; }
+  .metric .src { font-size: 11px; letter-spacing: 0.14em; margin-top: 8px; }
+  .heading { position: absolute; left: 0; right: 0; top: 34px; text-align: center; font-size: 13px; letter-spacing: 0.3em; color: var(--muted); }
 
   /* pillars */
   .pillar { position: absolute; bottom: 44px; width: 33.33%; text-align: center; }
@@ -52,7 +63,7 @@
   .foot-copy .big { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
   .foot-copy .small { font-size: 16px; color: var(--muted); margin-top: 10px; }
   .foot-copy .small b { color: var(--decide); font-weight: 600; }
-  .foot-me { position: absolute; bottom: 0; left: 610px; height: 300px; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28)); }
+  .foot-copy .links { font-size: 13px; color: var(--muted); margin-top: 22px; letter-spacing: 0.06em; }
 </style>
 </head>
 <body>
@@ -103,7 +114,9 @@ const overlays = {
         <span class="chip"><i style="background:var(--defend)"></i>Cyber Defense</span>
         <span class="chip"><i style="background:var(--decide)"></i>Distributed Systems</span>
       </div>
-    </div>`,
+      <div class="now mono"><span class="dot"></span>now building <b>Jagapadi</b> · UM Metro Hackathon 2026</div>
+    </div>
+    <div class="corner mono">SURABAYA, ID · 7.28° S 112.79° E</div>`,
   pillars: `
     <div class="frame"></div>
     <div class="pillar" style="left:0"><div class="num mono" style="color:var(--see)">01 / SEE</div><div class="title">Perception</div><div class="sub">YOLOv8 · OpenCV · satellite imagery</div></div>
@@ -115,8 +128,16 @@ const overlays = {
       <div class="big">Thanks for stopping by.</div>
       <div class="small mono">Open to collaboration, research and hackathons.</div>
       <div class="small mono"><b>Let's build something.</b></div>
-    </div>
-    <img class="foot-me" src="me-waist.png" alt="" />`,
+      <div class="links mono">linkedin.com/in/aryarefman · arya445refman@gmail.com</div>
+    </div>`,
+  metrics: `
+    <div class="frame"></div>
+    <div class="heading mono">BY THE NUMBERS</div>
+    <div class="metric" style="left:0"><div class="val" style="color:var(--defend)">15.7M</div><div class="lab">SYN-flood packets<br/>absorbed and blocked</div><div class="src mono" style="color:var(--defend)">SOC-SOAR</div></div>
+    <div class="metric" style="left:20%"><div class="val" style="color:var(--defend)">&lt; 4 s</div><div class="lab">from detection to block,<br/>no human in the loop</div><div class="src mono" style="color:var(--defend)">SOC-SOAR</div></div>
+    <div class="metric" style="left:40%"><div class="val" style="color:var(--see)">&lt; 50 ms</div><div class="lab">per frame to check<br/>red-zone breaches</div><div class="src mono" style="color:var(--see)">SIEWS+</div></div>
+    <div class="metric" style="left:60%"><div class="val" style="color:var(--decide)">~15%</div><div class="lab">lower makespan than<br/>FCFS and Round Robin</div><div class="src mono" style="color:var(--decide)">PEFT SCHEDULER</div></div>
+    <div class="metric" style="left:80%"><div class="val" style="color:var(--decide)">2,812</div><div class="lab">papers screened for<br/>the world-model review</div><div class="src mono" style="color:var(--decide)">SLR</div></div>`,
 };
 document.getElementById("overlay").innerHTML = overlays[SCENE];
 
@@ -364,6 +385,80 @@ function buildHero() {
     tip.material.opacity = (DARK ? 0.9 : 0.55) * (0.35 + 0.65 * (0.5 + 0.5 * Math.cos(TAU * p * 4)));
   });
 
+  // --- river from the terraces to the rim, spilling over as a waterfall
+  const RIVER_A = (140 * Math.PI) / 180, rimR = 3.18;
+  const riverDir = new THREE.Vector3(Math.cos(RIVER_A), 0, Math.sin(RIVER_A));
+  const nearRiver = (x, z) => {
+    const t = THREE.MathUtils.clamp(x * riverDir.x + z * riverDir.z, 0.9, rimR);
+    return Math.hypot(x - riverDir.x * t, z - riverDir.z * t);
+  };
+  const riverLen = rimR - 0.9;
+  const riverMat = new THREE.MeshStandardMaterial({ color: C.water, roughness: 0.12, metalness: 0.15, emissive: C.water, emissiveIntensity: DARK ? 0.18 : 0.05 });
+  const river = mesh(new THREE.BoxGeometry(riverLen, 0.03, 0.3), riverMat, { cast: false });
+  river.position.copy(riverDir.clone().multiplyScalar(0.9 + riverLen / 2)).setY(0.015);
+  river.rotation.y = -RIVER_A; world.add(river);
+  [-1, 1].forEach((side) => {
+    for (let k = 0; k < 7; k++) {
+      const t = 1.0 + k * 0.32, off = new THREE.Vector3(-riverDir.z, 0, riverDir.x).multiplyScalar(side * (0.2 + r() * 0.05));
+      const pebble = mesh(new THREE.DodecahedronGeometry(0.045 + r() * 0.03, 0), mat(C.stone));
+      pebble.position.copy(riverDir.clone().multiplyScalar(t).add(off)).setY(0.03); world.add(pebble);
+    }
+  });
+  const bridge = new THREE.Group();
+  const deckB = mesh(new THREE.BoxGeometry(0.62, 0.05, 0.22), mat(C.trunk)); deckB.position.y = 0.09; bridge.add(deckB);
+  [-1, 1].forEach((s2) => { const rail = mesh(new THREE.BoxGeometry(0.62, 0.03, 0.03), mat(C.trunk)); rail.position.set(0, 0.2, s2 * 0.1); bridge.add(rail); });
+  bridge.position.copy(riverDir.clone().multiplyScalar(2.05)); bridge.rotation.y = -RIVER_A + Math.PI / 2; world.add(bridge);
+
+  const fallH = 3.0;
+  const fallGeo = new THREE.PlaneGeometry(0.34, fallH, 1, 24); fallGeo.translate(0, -fallH / 2, 0);
+  { // bow the sheet outward as it falls
+    const fp = fallGeo.attributes.position;
+    for (let i = 0; i < fp.count; i++) { const y = -fp.getY(i) / fallH; fp.setZ(i, 0.55 * y * y + 0.12 * y); }
+  }
+  const fall = new THREE.Mesh(fallGeo, new THREE.ShaderMaterial({
+    uniforms: { phase: { value: 0 }, color: { value: C.water.clone().lerp(new THREE.Color("#ffffff"), 0.35) } },
+    vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `uniform float phase; uniform vec3 color; varying vec2 vUv;
+      void main() {
+        float y = 1.0 - vUv.y;
+        float streak = 0.55 + 0.45 * sin((vUv.x * 9.0 + sin(vUv.x * 23.0) * 0.6) * 6.2831);
+        float flow = 0.6 + 0.4 * sin((y * 5.0 - phase * 3.0) * 6.2831 + vUv.x * 4.0);
+        float edge = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);
+        float fade = smoothstep(1.0, 0.45, y);
+        gl_FragColor = vec4(color * (0.85 + 0.25 * flow), (0.35 + 0.5 * streak * flow) * edge * fade);
+      }`,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  }));
+  fall.position.copy(riverDir.clone().multiplyScalar(rimR + 0.02)).setY(0.02);
+  fall.rotation.y = Math.PI / 2 - RIVER_A;
+  world.add(fall);
+  animators.push((p) => { fall.material.uniforms.phase.value = p; });
+  const mist = [];
+  for (let k = 0; k < 5; k++) {
+    const m = glowSprite(new THREE.Color("#ffffff"), 0.35 + r() * 0.3); world.add(m); mist.push([m, r()]);
+  }
+  animators.push((p) => {
+    mist.forEach(([m, ph], k) => {
+      const u = (p * 2 + ph) % 1;
+      m.position.copy(riverDir.clone().multiplyScalar(rimR + 0.25 + 0.4 * u)).setY(-0.4 - 1.6 * u);
+      m.position.add(new THREE.Vector3(-riverDir.z, 0, riverDir.x).multiplyScalar((k - 2) * 0.08));
+      m.material.opacity = (DARK ? 0.22 : 0.4) * Math.sin(Math.PI * u);
+    });
+  });
+
+  // --- wind turbine on the back of the island (3 blades: a third of a turn per loop is seamless)
+  const turbine = new THREE.Group(); turbine.position.copy(hub(292, 2.55)); world.add(turbine);
+  const tower = mesh(new THREE.CylinderGeometry(0.035, 0.07, 2.0, 8), mat(C.stone)); tower.position.y = 1.0; turbine.add(tower);
+  const nacelle = mesh(new THREE.BoxGeometry(0.12, 0.12, 0.26), mat(C.stone)); nacelle.position.set(0, 2.02, 0.04); turbine.add(nacelle);
+  const rotor = new THREE.Group(); rotor.position.set(0, 2.02, 0.19); turbine.add(rotor);
+  for (let k = 0; k < 3; k++) {
+    const blade = mesh(new THREE.BoxGeometry(0.06, 0.78, 0.015), mat(C.stone)); blade.position.y = 0.39;
+    const arm = new THREE.Group(); arm.rotation.z = (k * TAU) / 3; arm.add(blade); rotor.add(arm);
+  }
+  rotor.add(mesh(new THREE.SphereGeometry(0.05, 10, 8), mat(C.see)));
+  turbine.rotation.y = 0.35;
+  animators.push((p) => { rotor.rotation.z = -(TAU / 3) * p; });
+
   // --- trees around the rim, away from the three districts
   const hubs = [P_SEE, P_DEF, P_DEC, new THREE.Vector3()];
   let placed = 0;
@@ -371,6 +466,7 @@ function buildHero() {
     const a = r() * TAU, d = 1.3 + r() * 1.65;
     const x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (hubs.some((h, i) => Math.hypot(h.x - x, h.z - z) < (i === 3 ? 1.15 : 0.95))) continue;
+    if (nearRiver(x, z) < 0.42) continue;
     world.add(tree(r, x, z, 0.75 + r() * 0.5)); placed++;
   }
 
@@ -418,6 +514,46 @@ function buildHero() {
       rock.rotation.set(TAU * p, TAU * (p + ph), 0);
     });
   }
+
+  // --- a small flock circling the island
+  const birdMat = new THREE.MeshBasicMaterial({ color: DARK ? 0xe9e1ff : 0x3a3448, side: THREE.DoubleSide });
+  const wingGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, -0.04), new THREE.Vector3(0, 0, 0.05), new THREE.Vector3(0.2, 0, 0)]);
+  for (let k = 0; k < 5; k++) {
+    const bird = new THREE.Group();
+    const L = new THREE.Mesh(wingGeo, birdMat), R = new THREE.Mesh(wingGeo, birdMat); R.scale.x = -1;
+    bird.add(L, R); scene.add(bird);
+    const ph = k * 0.035, rad = 4.9 + (k % 2) * 0.35, hy = 2.25 + (k % 3) * 0.18;
+    animators.push((p) => {
+      const a = TAU * (p + ph) + 2.2;
+      bird.position.set(Math.cos(a) * rad, hy + 0.1 * Math.sin(TAU * p * 2 + k), Math.sin(a) * rad * 0.55 - 1.0);
+      bird.rotation.y = -a;
+      const flap = 0.55 * Math.sin(TAU * p * 8 + k);
+      L.rotation.z = flap; R.rotation.z = -flap;
+    });
+  }
+
+  // --- two little satellite islands drifting nearby
+  [[-5.0, 1.3, -2.6, 51], [4.55, -1.6, -1.6, 53]].forEach(([x, y, z, seed], k) => {
+    const isle = islandBase(1.0, 1.3, seed); isle.scale.setScalar(0.55);
+    const rr = rng(seed);
+    for (let t = 0; t < 3; t++) { const a = rr() * TAU, d = rr() * 0.55; isle.add(tree(rr, Math.cos(a) * d, Math.sin(a) * d, 0.9)); }
+    scene.add(isle);
+    animators.push((p) => { isle.position.set(x, y + 0.16 * Math.sin(TAU * p + k * 2.4), z); isle.rotation.y = 0.4 + 0.12 * Math.sin(TAU * p + k); });
+  });
+
+  // --- fireflies / dust motes
+  const motes = [];
+  for (let k = 0; k < 26; k++) {
+    const col = [C.see, C.decide, C.defend][k % 3];
+    const m = glowSprite(col, 0.16 + r() * 0.12); scene.add(m);
+    motes.push([m, r() * TAU, 1.6 + r() * 3.4, -0.5 + r() * 3.0, r()]);
+  }
+  animators.push((p) => {
+    motes.forEach(([m, a, d, y, ph]) => {
+      m.position.set(Math.cos(a + 0.3 * Math.sin(TAU * (p + ph))) * d, y + 0.3 * Math.sin(TAU * (p + ph)), Math.sin(a) * d * 0.7);
+      m.material.opacity = (DARK ? 0.85 : 0.5) * (0.4 + 0.6 * Math.abs(Math.sin(TAU * (p + ph))));
+    });
+  });
 
   if (DARK) { const halo = glowSprite(new THREE.Color("#6b4fd8"), 9); halo.material.opacity = 0.18; halo.position.set(0, -0.6, -2); scene.add(halo); }
 
@@ -511,6 +647,38 @@ function buildPillars() {
   camera.setViewOffset(W, H, 0, H * 0.1, W, H);
 }
 
+function buildMetrics() {
+  LOOP = 4;
+  lights();
+  scene.add(stars(DARK ? 120 : 60, 22, 13));
+  const cols = [[C.defend, 7], [C.defend, 5], [C.see, 6], [C.decide, 4], [C.decide, 5]];
+  const cube = new THREE.BoxGeometry(0.42, 0.42, 0.42);
+  cols.forEach(([color, n], i) => {
+    const g = new THREE.Group(); g.position.set((i - 2) * 5.3, 0, 0); scene.add(g);
+    const base = mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.16, 6), mat(C.slate)); base.position.y = -0.08; g.add(base);
+    const ring = mesh(new THREE.TorusGeometry(0.98, 0.02, 6, 6), glow(color, 1.2), { cast: false }); ring.rotation.x = Math.PI / 2; ring.position.y = 0.01; g.add(ring);
+    const stack = [];
+    for (let k = 0; k < n; k++) {
+      const top = k === n - 1;
+      const c = mesh(cube, top ? glow(color, 1.6) : mat(color.clone().lerp(C.slate, 0.55 - k * 0.05)));
+      g.add(c); stack.push(c);
+      if (top) { const s = glowSprite(color, 1.3); c.add(s); }
+    }
+    animators.push((p) => {
+      stack.forEach((c, k) => {
+        const wave = Math.sin(TAU * p - i * 0.9 - k * 0.35);
+        c.position.set(0, 0.24 + k * 0.46 + 0.05 * wave * k / n, 0);
+        c.rotation.y = 0.25 * Math.sin(TAU * p + k * 0.5 + i);
+      });
+      g.rotation.y = 0.5 + 0.1 * Math.sin(TAU * p + i);
+    });
+  });
+  camera.fov = 24;
+  camera.position.set(0, 3.0, 19.5);
+  camera.lookAt(0, 1.5, 0);
+  camera.setViewOffset(W, H, 0, H * 0.13, W, H);
+}
+
 function buildFooter() {
   LOOP = 6;
   lights();
@@ -538,6 +706,24 @@ function buildFooter() {
   [-1, 1].forEach((s) => { const pnl = mesh(new THREE.BoxGeometry(0.3, 0.012, 0.14), glow(C.decide, 0.6)); pnl.position.x = s * 0.24; sat.add(pnl); });
   sat.add(glowSprite(C.see, 0.5));
   orbit.add(sat);
+  // data packets on tilted orbits around the globe
+  const orbiters = [[C.see, 1.55, 0.5, 1], [C.defend, 1.7, -0.6, 2], [C.decide, 1.62, 1.2, 1]].map(([color, rad, tilt, speed], k) => {
+    const pivot = new THREE.Group(); pivot.rotation.set(tilt, 0, 0.4 * (k - 1)); scene.add(pivot);
+    const cube = mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), glow(color, 2.6), { cast: false });
+    cube.add(glowSprite(color, 0.45)); pivot.add(cube);
+    return [cube, rad, speed, k / 3];
+  });
+  animators.push((p) => {
+    orbiters.forEach(([cube, rad, speed, ph]) => {
+      const a = TAU * (p * speed + ph);
+      cube.position.set(Math.cos(a) * rad, 0, Math.sin(a) * rad);
+      cube.rotation.set(a, a * 2, 0);
+    });
+  });
+  // a moon
+  const moon = mesh(new THREE.IcosahedronGeometry(0.22, 1), mat(C.stone));
+  scene.add(moon);
+  animators.push((p) => { const a = TAU * p + 1; moon.position.set(Math.cos(a) * 2.6, 0.5 * Math.sin(a), Math.sin(a) * 2.6 - 0.5); moon.rotation.y = a; });
   animators.push((p) => {
     globe.rotation.set(0.35, TAU * p, 0);
     const a = -TAU * p;
@@ -550,7 +736,7 @@ function buildFooter() {
   camera.setViewOffset(W, H, -W * 0.3, 0, W, H);
 }
 
-({ hero: buildHero, pillars: buildPillars, footer: buildFooter })[SCENE]();
+({ hero: buildHero, pillars: buildPillars, metrics: buildMetrics, footer: buildFooter })[SCENE]();
 window.LOOP = LOOP;
 window.renderAt = (t) => {
   const p = ((t % LOOP) + LOOP) % LOOP / LOOP;
