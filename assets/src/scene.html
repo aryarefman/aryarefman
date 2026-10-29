@@ -157,17 +157,14 @@ document.getElementById("stage").appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 200);
 
-// Each README image is one layer of the descent from space to the ground (same painter as the portfolio).
-const LAYER = parseFloat(params.get("layer") ?? { hero: 0, pillars: 1, metrics: 2, seasons: 3, footer: 6 }[SCENE]);
+// Every README image shares the same deep-space backdrop (sky.js stage 0).
+const LAYER = parseFloat(params.get("layer") ?? "0");
 const skyCanvas = document.createElement("canvas");
 skyCanvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:-1";
 document.body.prepend(skyCanvas);
 createSky(skyCanvas, { reduceMotion: true }).draw(0, LAYER, 0, 0);
 
-// the footer is the landing: ground, photo and text, no 3D object, so a single still frame
-const world = SCENE === "footer"
-  ? { loop: 0.05, update() {} }
-  : createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: true, stars3d: false });
+const world = createWorld({ name: SCENE, scene, camera, width: W, height: H, dark: DARK, drift: true, stars3d: false });
 window.LOOP = world.loop;
 
 // seasons map: put each label beside its island (anchors come from the world, projected at the rest pose)

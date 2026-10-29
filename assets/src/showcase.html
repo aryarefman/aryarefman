@@ -74,11 +74,11 @@ key.shadow.radius = 6; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
 scene.add(hemi, key);
 
 // Soft shadow on an invisible floor so the PNG stays transparent.
-{ // the sky layer for this card (the README cards descend from the stratosphere to dusk)
+{ // deep-space backdrop, same as the other README images
   const c = document.createElement("canvas");
   c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:-1";
   document.body.prepend(c);
-  createSky(c, { reduceMotion: true }).draw(0, parseFloat(params.get("layer") ?? "4"), 0, 0);
+  createSky(c, { reduceMotion: true }).draw(0, 0, 0, 0);
 }
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: DARK ? 0.35 : 0.2 }));
 floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;

@@ -24,8 +24,6 @@ SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 20), "metrics": (1280,
 # name: (width, height)
 SHOWCASE = {"jagapadi": (1120, 540), **{n: (880, 520) for n in ("helaloka", "narpati", "algoverse", "aromasys", "skyopt", "siews", "soc")}}
 SHOWCASE_FPS = 15
-# README order of the cards, descending through the clouds towards dusk
-SHOWCASE_LAYER = {"jagapadi": 3.6, "algoverse": 3.85, "aromasys": 4.1, "siews": 4.35, "helaloka": 4.6, "narpati": 4.85, "soc": 5.1, "skyopt": 5.35}
 LAUNCH_ARGS = ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
 
 
@@ -81,7 +79,7 @@ def render_scene(browser, port, name, themes=("dark",)):
 def render_showcase(browser, port, name):
     w, h = SHOWCASE[name]
     for theme in ("dark",):
-        page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}&theme={theme}&layer={SHOWCASE_LAYER[name]}", w, h)
+        page = open_page(browser, f"http://127.0.0.1:{port}/showcase.html?id={name}&theme={theme}", w, h)
         count = round(page.evaluate("window.LOOP") * SHOWCASE_FPS)
         tmp = Path(tempfile.mkdtemp(prefix=f"showcase-{name}-{theme}-"))
         for i in range(count):
