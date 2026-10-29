@@ -51,17 +51,20 @@
 <img src="assets/pillars-dark.gif" width="100%" alt="Three rotating 3D objects on floating islands in space: a camera for perception, a shield for security, and a node graph for systems" />
 <br/><br/>
 <img src="assets/metrics-dark.gif" width="100%" alt="By the numbers: 15.7M SYN-flood packets blocked, under 4 s from detection to block, under 50 ms per frame, about 15% lower makespan, 2,812 papers screened" />
-<br/><br/>
-<img src="assets/seasons-dark.gif" width="100%" alt="Four floating islands in space, one per season: spring with cherry blossoms, summer with palms and a lagoon, autumn with orange trees and hay bales, winter with snowy pines and a cabin" />
 </div>
 
 ## Featured work
+
+<div align="center">
+<img src="assets/seasons-dark.gif" width="100%" alt="Map of my work: four floating islands, one per kind of project. Learning tools: AlgoVerse and Sky Optimizers. Hackathon builds: Jagapadi, HELALOKA and SIEWS+. Products: AromaSys and Narpati Quest. Security and research: SOC-SOAR, the LLM guardrails paper and the SLR." />
+<sub>🌸 <b>Learning tools</b> <a href="#p-algoverse">AlgoVerse</a> · <a href="#p-skyopt">Sky Optimizers</a> &nbsp;|&nbsp; 🏝️ <b>Hackathon builds</b> <a href="#p-jagapadi">Jagapadi</a> · <a href="#p-helaloka">HELALOKA</a> · <a href="#p-siews">SIEWS+</a> &nbsp;|&nbsp; 🍂 <b>Products</b> <a href="#p-aromasys">AromaSys</a> · <a href="#p-narpati">Narpati Quest</a> &nbsp;|&nbsp; ❄️ <b>Security &amp; research</b> <a href="#p-soc">SOC‑SOAR</a> · <a href="#research">Papers</a></sub>
+</div>
 
 <table>
   <tr>
     <td colspan="2" align="center">
       <img src="assets/projects/jagapadi-dark.gif" width="92%" alt="Jagapadi landing page on a laptop and phone with the Jagapadi logo, the camera gently orbiting" />
-      <h3>Jagapadi · rice fields, watched from orbit</h3>
+      <h3><a name="p-jagapadi"></a>Jagapadi · rice fields, watched from orbit</h3>
       <sub><b>UM Metro Hackathon 2026</b> · team of three · <a href="https://github.com/ITHACKITS">ITHACKITS</a></sub>
       <p>Sentinel-1 radar and Sentinel-2 imagery plus weather ensembles feed a water-balance model for fields in Metro, Lampung.<br/>
       Farmers get plain-language verdicts and Telegram alerts on drought, flood and pest risk; extension officers get a group dashboard and a 3D field diorama.</p>
@@ -72,7 +75,7 @@
   <tr>
     <td width="50%" valign="top">
       <img src="assets/projects/algoverse-dark.gif" width="100%" alt="AlgoVerse landing page on a laptop with its logo and a floating 3D binary tree" />
-      <h3>AlgoVerse &nbsp;🥈</h3>
+      <h3><a name="p-algoverse"></a>AlgoVerse &nbsp;🥈</h3>
       <sub><b>2nd place · IT Fest 2026, Universitas Brawijaya</b></sub>
       <p>Data structures and algorithms as interactive 3D objects in Augmented Reality, straight from a phone browser: 7 data structures, 8 algorithms and 3 challenge modes, with step-by-step playback of every comparison and swap.</p>
       <p><code>WebAR</code> <code>Three.js</code> <code>JavaScript</code> <code>Vercel</code></p>
@@ -80,7 +83,7 @@
     </td>
     <td width="50%" valign="top">
       <img src="assets/projects/aromasys-dark.gif" width="100%" alt="AromaSys landing page on a laptop with the AromaSys logo" />
-      <h3>AromaSys &nbsp;🥈</h3>
+      <h3><a name="p-aromasys"></a>AromaSys &nbsp;🥈</h3>
       <sub><b>2nd place</b> · warehouse intelligence · lead developer</sub>
       <p>Digital-twin floor plan with live sensor and cold-chain telemetry, Roboflow computer-vision quality control, a Gemini 2.5 Flash operations copilot, 4-role RBAC and FIFO expiry tracking.</p>
       <p><code>Next.js 16</code> <code>Express 5</code> <code>PostgreSQL</code> <code>Gemini</code> <code>Roboflow</code></p>
@@ -90,7 +93,7 @@
   <tr>
     <td width="50%" valign="top">
       <img src="assets/projects/siews-dark.gif" width="100%" alt="SIEWS+ YOLOv8 detection of helmets and safety vests on a monitor, with the S+ logo" />
-      <h3>SIEWS+ 5.0 &nbsp;🏅</h3>
+      <h3><a name="p-siews"></a>SIEWS+ 5.0 &nbsp;🏅</h3>
       <sub><b>Finalist · IOC Digital Hackathon 2026</b></sub>
       <p>YOLOv8 on live RTSP streams checks PPE and detects people inside red-zone polygons in under 50 ms per frame, triggers fail-safe shutdown signals, and pushes alerts over WebSocket and WhatsApp.</p>
       <p><code>Python</code> <code>FastAPI</code> <code>YOLOv8</code> <code>OpenCV</code> <code>Next.js</code></p>
@@ -98,7 +101,7 @@
     </td>
     <td width="50%" valign="top">
       <img src="assets/projects/helaloka-dark.gif" width="100%" alt="HELALOKA landing page and smoke-dispersion map" />
-      <h3>HELALOKA</h3>
+      <h3><a name="p-helaloka"></a>HELALOKA</h3>
       <sub><b>JOINTS UGM 2026</b> · volcanic ash &amp; wildfire smoke · top contributor</sub>
       <p>One Lagrangian particle engine (RK2) simulates both ash and smoke across Indonesia: 70 volcanoes with MAGMA levels and 36 fire-prone forest and peat areas, with P5/P50/P95 impact ranges, clinics in the plume and routes to hospitals outside it.</p>
       <p><code>JavaScript</code> <code>Python</code> <code>NASA FIRMS</code> <code>MAGMA</code> <code>Ensembles</code></p>
@@ -108,7 +111,7 @@
   <tr>
     <td width="50%" valign="top">
       <img src="assets/projects/narpati-dark.gif" width="100%" alt="Narpati Quest landing page and gameplay screen with the NQ logo" />
-      <h3>Narpati Quest</h3>
+      <h3><a name="p-narpati"></a>Narpati Quest</h3>
       <sub><b>AI text RPG in the world of Javanese wayang</b> · lead contributor</sub>
       <p>An interactive Mahabharata adventure narrated by a "Dalang AI" game master. It works with Gemini, OpenAI, Groq, DeepSeek, OpenRouter or a custom endpoint, and uses retrieval to stay true to the wayang lore.</p>
       <p><code>TypeScript</code> <code>Next.js</code> <code>LLMs</code> <code>RAG</code></p>
@@ -116,7 +119,7 @@
     </td>
     <td width="50%" valign="top">
       <img src="assets/projects/soc-dark.gif" width="100%" alt="SOC-SOAR Shuffle workflow and Telegram auto-block alerts with a shield" />
-      <h3>SOC-SOAR</h3>
+      <h3><a name="p-soc"></a>SOC-SOAR</h3>
       <sub><b>Automated DDoS detection &amp; response</b></sub>
       <p>Custom Wazuh decoders spot SYN-flood state exhaustion, an active-response script drops the attacker with iptables, and Shuffle opens a Jira ticket and posts to Telegram. Detection to block in under 4 seconds, no human in the loop.</p>
       <p><code>Wazuh</code> <code>Shuffle SOAR</code> <code>Jira API</code> <code>Telegram</code> <code>Bash</code></p>
@@ -126,7 +129,7 @@
   <tr>
     <td colspan="2" align="center">
       <img src="assets/projects/skyopt-dark.gif" width="62%" alt="Sky Optimizers 3D teaching animation on a laptop with the eagle and wolf mascots" />
-      <h3>Sky Optimizers</h3>
+      <h3><a name="p-skyopt"></a>Sky Optimizers</h3>
       <sub><b>Interactive 3D teaching animation</b></sub>
       <p>Watch Particle Swarm Optimization and the Grey Wolf Optimizer search the same landscape step by step on floating islands,<br/>with a narrated explainer on how both are used in cloud computing. English and Indonesian.</p>
       <p><code>Three.js</code> <code>JavaScript</code> <code>Metaheuristics</code></p>
