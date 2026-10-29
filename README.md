@@ -16,10 +16,10 @@
 
 <table>
   <tr>
-    <td width="38%" align="center" valign="bottom">
-      <img src="assets/arya-city.png" width="270" alt="Arya smiling in a white cap and green sweater" />
+    <td width="46%" align="center" valign="middle">
+      <img src="assets/arya-city.png" width="100%" alt="Arya standing at a glass balcony railing in the city at night, one hand on the steel handrail" />
     </td>
-    <td width="62%" valign="top">
+    <td width="54%" valign="top">
       <h3>About me</h3>
       <p>
         I study <b>Information Technology at Institut Teknologi Sepuluh Nopember (ITS)</b> in Surabaya, Indonesia, with a <b>3.95 / 4.00 GPA</b>,
