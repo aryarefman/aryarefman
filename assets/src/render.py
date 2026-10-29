@@ -20,7 +20,7 @@ from playwright.sync_api import sync_playwright
 SRC = Path(__file__).resolve().parent
 ASSETS = SRC.parent
 # name: (width, height, frames per second)
-SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 15), "metrics": (1280, 400, 15), "footer": (1280, 420, 15)}
+SCENES = {"hero": (1280, 520, 25), "pillars": (1280, 380, 15), "metrics": (1280, 400, 15), "seasons": (1280, 400, 15), "footer": (1280, 420, 15)}
 # name: (width, height)
 SHOWCASE = {"jagapadi": (1120, 540), **{n: (880, 520) for n in ("helaloka", "narpati", "algoverse", "aromasys", "skyopt", "siews", "soc")}}
 SHOWCASE_FPS = 10

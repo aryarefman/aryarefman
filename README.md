@@ -51,6 +51,8 @@
 <img src="assets/pillars-dark.gif" width="100%" alt="Three rotating 3D objects on floating islands in space: a camera for perception, a shield for security, and a node graph for systems" />
 <br/><br/>
 <img src="assets/metrics-dark.gif" width="100%" alt="By the numbers: 15.7M SYN-flood packets blocked, under 4 s from detection to block, under 50 ms per frame, about 15% lower makespan, 2,812 papers screened" />
+<br/><br/>
+<img src="assets/seasons-dark.gif" width="100%" alt="Four floating islands in space, one per season: spring with cherry blossoms, summer with palms and a lagoon, autumn with orange trees and hay bales, winter with snowy pines and a cabin" />
 </div>
 
 ## Featured work

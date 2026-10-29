@@ -132,13 +132,13 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
   const spike = (radius, height, segments, rows) => new THREE.CylinderGeometry(0.002, radius, height, segments, rows);
 
   // A floating chunk of land: grass cap, soil band, rocky underside.
-  function islandBase(radius, depth, seed) {
+  function islandBase(radius, depth, seed, pal = {}) {
     const g = new THREE.Group();
-    const cap = mesh(jitterRadial(new THREE.CylinderGeometry(radius, radius * 1.02, 0.22, 30, 1), 0.035, seed), mat(C.grass));
+    const cap = mesh(jitterRadial(new THREE.CylinderGeometry(radius, radius * 1.02, 0.22, 30, 1), 0.035, seed), mat(pal.grass || C.grass));
     cap.position.y = -0.11; g.add(cap);
-    const soil = mesh(jitterRadial(new THREE.CylinderGeometry(radius * 1.02, radius * 0.9, 0.42, 30, 2), 0.05, seed + 2), mat(C.soil));
+    const soil = mesh(jitterRadial(new THREE.CylinderGeometry(radius * 1.02, radius * 0.9, 0.42, 30, 2), 0.05, seed + 2), mat(pal.soil || C.soil));
     soil.position.y = -0.43; g.add(soil);
-    const rock = mesh(jitterRadial(spike(radius * 0.9, depth, 12, 3), 0.06, seed + 5), mat(C.rock));
+    const rock = mesh(jitterRadial(spike(radius * 0.9, depth, 12, 3), 0.06, seed + 5), mat(pal.rock || C.rock));
     rock.rotation.x = Math.PI; rock.position.y = -0.64 - depth / 2; g.add(rock);
     const r = rng(seed);
     for (let i = 0; i < 3; i++) {
@@ -602,6 +602,204 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     swayCamera(new THREE.Vector3(0, 1.5, 0), 2.6, 0.4);
   }
 
+
+  // ---------- seasonal islands ----------
+  // Each returns { group, update(p) }; p is the loop phase in [0, 1). Everything periodic in p, so GIFs loop.
+  const SEASON_LABELS = { spring: "Spring", summer: "Summer", autumn: "Autumn", winter: "Winter" };
+
+  function roundTree(r, x, z, s, colors) {
+    const g = new THREE.Group();
+    const trunk = mesh(new THREE.CylinderGeometry(0.04 * s, 0.06 * s, 0.42 * s, 6), mat(C.trunk));
+    trunk.position.y = 0.21 * s; g.add(trunk);
+    const n = 3 + Math.floor(r() * 2);
+    for (let i = 0; i < n; i++) {
+      const blob = mesh(new THREE.IcosahedronGeometry((0.2 + r() * 0.08) * s, 0), mat(colors[i % colors.length]));
+      blob.position.set((r() - 0.5) * 0.28 * s, (0.5 + r() * 0.2) * s, (r() - 0.5) * 0.28 * s);
+      blob.rotation.set(r() * TAU, r() * TAU, 0);
+      g.add(blob);
+    }
+    g.position.set(x, 0, z);
+    return g;
+  }
+
+  function palm(r, x, z, s) {
+    const g = new THREE.Group();
+    const lean = (r() - 0.5) * 0.5;
+    for (let i = 0; i < 6; i++) {
+      const seg = mesh(new THREE.CylinderGeometry(0.045 * s, 0.055 * s, 0.17 * s, 6), mat(new THREE.Color("#8a6a4a")));
+      seg.position.set(lean * i * 0.05 * s, (0.09 + i * 0.16) * s, 0); seg.rotation.z = -lean * 0.4; g.add(seg);
+    }
+    const top = new THREE.Vector3(lean * 0.3 * s, 1.0 * s, 0);
+    for (let k = 0; k < 6; k++) {
+      const frond = mesh(new THREE.BoxGeometry(0.62 * s, 0.02 * s, 0.13 * s), mat(new THREE.Color(k % 2 ? "#3f9a5c" : "#57b46b")));
+      frond.geometry.translate(0.31 * s, 0, 0);
+      frond.position.copy(top); frond.rotation.set(0, (k / 6) * TAU, -0.45);
+      g.add(frond);
+    }
+    const coco = mesh(new THREE.SphereGeometry(0.05 * s, 8, 6), mat(new THREE.Color("#6b4a2a")));
+    coco.position.copy(top).add(new THREE.Vector3(0.05 * s, -0.06 * s, 0.04 * s)); g.add(coco);
+    g.position.set(x, 0, z);
+    return g;
+  }
+
+  function placeAround(r, count, minD, maxD, avoid, fn) {
+    const spots = [];
+    for (let t = 0; t < 400 && spots.length < count; t++) {
+      const a = r() * TAU, d = minD + r() * (maxD - minD), x = Math.cos(a) * d, z = Math.sin(a) * d;
+      if (avoid.some(([ax, az, ar]) => Math.hypot(ax - x, az - z) < ar)) continue;
+      if (spots.some(([sx, sz]) => Math.hypot(sx - x, sz - z) < 0.42)) continue;
+      spots.push([x, z]); fn(x, z);
+    }
+  }
+
+  // Falling particles (petals, leaves, snow) inside a cylinder above the island; speed is a whole number of
+  // falls per loop so the GIF loops cleanly.
+  function fallers(group, count, radius, height, makeMesh, seed, spin = true) {
+    const r = rng(seed), items = [];
+    for (let i = 0; i < count; i++) {
+      const m = makeMesh(i); group.add(m);
+      items.push({ m, a: r() * TAU, d: Math.sqrt(r()) * radius, ph: r(), drift: 0.15 + r() * 0.2, sp: 1 + Math.floor(r() * 2) });
+    }
+    return (p) => items.forEach((it) => {
+      const u = (p * it.sp + it.ph) % 1;
+      it.m.position.set(Math.cos(it.a) * it.d + it.drift * Math.sin(TAU * (u * 2 + it.ph)), height * (1 - u) - 0.2, Math.sin(it.a) * it.d);
+      if (spin) it.m.rotation.set(TAU * u * 2, TAU * (u + it.ph), 0);
+      it.m.visible = u < 0.97;
+    });
+  }
+
+  function seasonIsland(season, seed = 100) {
+    const r = rng(seed);
+    const g = new THREE.Group();
+    const updates = [];
+    const R = 2.2;
+    const hex = (c) => new THREE.Color(c);
+
+    if (season === "spring") {
+      g.add(islandBase(R, 2.0, seed, { grass: hex("#8fd16f"), soil: hex("#9a6a4c") }));
+      const pond = mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.03, 20), new THREE.MeshStandardMaterial({ color: 0x7fd3e6, roughness: 0.1, metalness: 0.1 }), { cast: false });
+      pond.position.set(0.5, 0.01, 0.35); pond.scale.set(1.3, 1, 0.8); g.add(pond);
+      const pinks = [hex("#ffb7d5"), hex("#ff94c2"), hex("#ffd1e4")];
+      placeAround(r, 7, 0.6, 1.9, [[0.5, 0.35, 0.95]], (x, z) => g.add(roundTree(r, x, z, 0.85 + r() * 0.35, pinks)));
+      for (let i = 0; i < 70; i++) {
+        const a = r() * TAU, d = Math.sqrt(r()) * 2.0;
+        const f = mesh(new THREE.SphereGeometry(0.035, 6, 4), mat([hex("#ffffff"), hex("#ffe36b"), hex("#ff8fbf"), hex("#c9a7ff")][i % 4]), { cast: false });
+        f.position.set(Math.cos(a) * d, 0.03, Math.sin(a) * d); g.add(f);
+      }
+      const petal = new THREE.PlaneGeometry(0.07, 0.05);
+      const petalMat = new THREE.MeshBasicMaterial({ color: 0xffb7d5, side: THREE.DoubleSide });
+      updates.push(fallers(g, 26, 2.3, 2.6, () => new THREE.Mesh(petal, petalMat), seed + 1));
+    }
+
+    if (season === "summer") {
+      g.add(islandBase(R, 2.0, seed, { grass: hex("#f2d58b"), soil: hex("#d9b46a"), rock: hex("#8a7a6a") }));
+      const lawn = mesh(jitterRadial(new THREE.CylinderGeometry(1.45, 1.5, 0.06, 24), 0.08, seed + 3), mat(hex("#6cc46a")), { cast: false });
+      lawn.position.set(-0.35, 0.03, -0.25); g.add(lawn);
+      const lagoon = mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.035, 24), new THREE.MeshStandardMaterial({ color: 0x3fd6c8, roughness: 0.05, metalness: 0.2, emissive: 0x0e5a55, emissiveIntensity: 0.4 }), { cast: false });
+      lagoon.position.set(0.85, 0.02, 0.75); lagoon.scale.set(1.2, 1, 0.9); g.add(lagoon);
+      placeAround(r, 5, 0.4, 1.6, [[0.85, 0.75, 1.0]], (x, z) => g.add(palm(r, x, z, 0.8 + r() * 0.3)));
+      const umbrella = new THREE.Group();
+      const pole = mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.6, 6), mat(C.stone)); pole.position.y = 0.3; umbrella.add(pole);
+      const top = mesh(new THREE.ConeGeometry(0.38, 0.18, 8), mat(hex("#ff6b6b"))); top.position.y = 0.62; umbrella.add(top);
+      umbrella.position.set(1.55, 0, -0.4); g.add(umbrella);
+      const towel = mesh(new THREE.BoxGeometry(0.4, 0.01, 0.2), mat(hex("#ffb454")), { cast: false }); towel.position.set(1.45, 0.01, -0.1); towel.rotation.y = 0.4; g.add(towel);
+      const sun = glowSprite(hex("#ffd27a"), 2.2); sun.material.opacity = DARK ? 0.75 : 0.6; sun.position.set(-0.6, 2.4, -1.4); g.add(sun);
+      const sunCore = mesh(new THREE.IcosahedronGeometry(0.3, 1), new THREE.MeshBasicMaterial({ color: 0xffd27a }), { cast: false, receive: false });
+      sunCore.position.copy(sun.position); g.add(sunCore);
+      updates.push((p) => { sun.scale.setScalar(2.2 + 0.25 * Math.sin(TAU * p * 2)); });
+    }
+
+    if (season === "autumn") {
+      g.add(islandBase(R, 2.0, seed, { grass: hex("#c9a24a"), soil: hex("#8a5a3c") }));
+      const warm = [[hex("#ff8a3d"), hex("#e85d2f"), hex("#ffb347")], [hex("#d9472b"), hex("#ff7a45"), hex("#b8341f")], [hex("#ffcc4d"), hex("#f5a524"), hex("#ffde80")]];
+      placeAround(r, 8, 0.5, 1.9, [[-0.6, 0.6, 0.7]], (x, z) => g.add(roundTree(r, x, z, 0.85 + r() * 0.35, warm[Math.floor(r() * 3)])));
+      for (let i = 0; i < 3; i++) {
+        const bale = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.26, 12), mat(hex("#e8c46a")));
+        bale.rotation.z = Math.PI / 2; bale.position.set(-0.8 + i * 0.22, 0.16, 0.5 + (i % 2) * 0.25); g.add(bale);
+      }
+      for (let i = 0; i < 4; i++) {
+        const pumpkin = mesh(new THREE.SphereGeometry(0.1, 10, 8), mat(hex("#ff7a1a")));
+        pumpkin.scale.set(1.2, 0.8, 1.2); pumpkin.position.set(-0.4 + (i % 2) * 0.25, 0.08, 0.95 + Math.floor(i / 2) * 0.2); g.add(pumpkin);
+      }
+      for (let i = 0; i < 60; i++) {
+        const a = r() * TAU, d = Math.sqrt(r()) * 2.0;
+        const leaf = mesh(new THREE.CircleGeometry(0.04, 5), mat(warm[i % 3][i % 3]), { cast: false });
+        leaf.rotation.x = -Math.PI / 2; leaf.position.set(Math.cos(a) * d, 0.012, Math.sin(a) * d); g.add(leaf);
+      }
+      const leafGeo = new THREE.PlaneGeometry(0.08, 0.06);
+      const leafMats = ["#ff8a3d", "#d9472b", "#ffcc4d"].map((c) => new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
+      updates.push(fallers(g, 24, 2.2, 2.6, (i) => new THREE.Mesh(leafGeo, leafMats[i % 3]), seed + 2));
+    }
+
+    if (season === "winter") {
+      g.add(islandBase(R, 2.0, seed, { grass: hex("#f2f6ff"), soil: hex("#c9d4ea"), rock: hex("#6a6f8a") }));
+      const ice = mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.03, 24), new THREE.MeshStandardMaterial({ color: 0xbfe6ff, roughness: 0.05, metalness: 0.3 }), { cast: false });
+      ice.position.set(-0.6, 0.02, 0.55); ice.scale.set(1.2, 1, 0.85); g.add(ice);
+      placeAround(r, 9, 0.5, 1.95, [[-0.6, 0.55, 0.95], [0.75, -0.35, 0.75]], (x, z) => {
+        const t = new THREE.Group(), s2 = 0.9 + r() * 0.4;
+        const trunk = mesh(new THREE.CylinderGeometry(0.035 * s2, 0.05 * s2, 0.28 * s2, 5), mat(C.trunk)); trunk.position.y = 0.14 * s2; t.add(trunk);
+        for (let i = 0; i < 3; i++) {
+          const cone = mesh(new THREE.ConeGeometry((0.28 - i * 0.07) * s2, (0.36 - i * 0.04) * s2, 7), mat(hex(i % 2 ? "#2f6a58" : "#3a7d68")));
+          cone.position.y = (0.34 + i * 0.17) * s2; t.add(cone);
+          const snow = mesh(new THREE.ConeGeometry((0.16 - i * 0.04) * s2, (0.14 - i * 0.02) * s2, 7), mat(hex("#ffffff")));
+          snow.position.y = (0.46 + i * 0.17) * s2; t.add(snow);
+        }
+        t.position.set(x, 0, z); g.add(t);
+      });
+      const cabin = new THREE.Group();
+      const body = mesh(new THREE.BoxGeometry(0.6, 0.38, 0.48), mat(hex("#7a4a34"))); body.position.y = 0.19; cabin.add(body);
+      const roof = mesh(new THREE.ConeGeometry(0.5, 0.32, 4), mat(hex("#ffffff"))); roof.position.y = 0.54; roof.rotation.y = Math.PI / 4; cabin.add(roof);
+      const win = mesh(new THREE.BoxGeometry(0.14, 0.12, 0.01), glow(hex("#ffb454"), 2.4), { cast: false }); win.position.set(0.12, 0.2, 0.245); cabin.add(win);
+      const warmLight = glowSprite(hex("#ffb454"), 0.7); warmLight.position.set(0.12, 0.2, 0.3); cabin.add(warmLight);
+      cabin.position.set(0.75, 0, -0.35); cabin.rotation.y = -0.4; g.add(cabin);
+      const snowman = new THREE.Group();
+      [[0.16, 0.14], [0.12, 0.38], [0.085, 0.56]].forEach(([rad, y]) => { const b = mesh(new THREE.IcosahedronGeometry(rad, 1), mat(hex("#ffffff"))); b.position.y = y; snowman.add(b); });
+      const nose = mesh(new THREE.ConeGeometry(0.02, 0.1, 6), mat(hex("#ff8a3d"))); nose.rotation.x = Math.PI / 2; nose.position.set(0, 0.56, 0.1); snowman.add(nose);
+      snowman.position.set(0.1, 0, 1.15); g.add(snowman);
+      const flake = new THREE.SphereGeometry(0.025, 5, 4);
+      const flakeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      updates.push(fallers(g, 40, 2.4, 2.8, () => new THREE.Mesh(flake, flakeMat), seed + 3, false));
+    }
+
+    return { group: g, update: (p) => updates.forEach((fn) => fn(p)) };
+  }
+
+  // README strip: the four seasons side by side
+  function buildSeasons() {
+    LOOP = 4;
+    lights();
+    ["spring", "summer", "autumn", "winter"].forEach((season, i) => {
+      const isle = seasonIsland(season, 200 + i * 17);
+      isle.group.scale.setScalar(1.05);
+      isle.group.position.set((i - 1.5) * 8.0, 0, 0);
+      scene.add(isle.group);
+      animators.push((p) => {
+        isle.update(p);
+        isle.group.position.y = 0.1 * Math.sin(TAU * p + i * 1.4);
+        isle.group.rotation.y = 0.5 + 0.18 * Math.sin(TAU * p + i);
+      });
+    });
+    camera.fov = 24;
+    camera.position.set(0, 3.2, 24);
+    camera.lookAt(0, 0.6, 0);
+    camera.setViewOffset(W, H, 0, H * 0.12, W, H);
+    swayCamera(new THREE.Vector3(0, 0.6, 0), 2.2, 0.35);
+  }
+
+  // Portfolio site: the seasons spread far apart; the page moves the camera from one to the next.
+  function buildArchipelago() {
+    LOOP = 8;
+    lights();
+    const isles = ["spring", "summer", "autumn", "winter"].map((season, i) => {
+      const isle = seasonIsland(season, 300 + i * 23);
+      isle.group.position.set(i * 40, 0, 0);
+      scene.add(isle.group);
+      animators.push((p) => { isle.update(p); isle.group.position.y = 0.12 * Math.sin(TAU * p + i); });
+      return isle.group;
+    });
+    camera.userData.isles = isles;
+  }
+
   function buildFooter() {
     LOOP = 6;
     lights();
@@ -660,7 +858,7 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     swayCamera(new THREE.Vector3(0, 0, 0), 1.4, 0.3);
   }
 
-  const build = { hero: buildHero, pillars: buildPillars, metrics: buildMetrics, footer: buildFooter }[name];
+  const build = { hero: buildHero, pillars: buildPillars, metrics: buildMetrics, footer: buildFooter, seasons: buildSeasons, archipelago: buildArchipelago }[name];
   if (!build) throw new Error(`unknown world: ${name}`);
   build();
   camera.updateProjectionMatrix();
