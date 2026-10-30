@@ -46,7 +46,7 @@
 | 🥈 | **2nd place** | [AromaSys](https://cyberhack-digendong-bokem.vercel.app/), warehouse intelligence platform | Cyberhack Hackathon, Xtremax × UCS ITS |
 | 🏅 | **Finalist** | [SIEWS+ 5.0](https://github.com/aryarefman/migas-siews), AI safety system for upstream oil and gas | Hackathon AI/ML Hulu Migas 2026, SKK Migas × IOG 4.0 |
 | 🏅 | **Finalist** | [Global AQI analysis](https://github.com/aryarefman/analisis-AQI-Dunia), PCA and clustering on world air-quality data | Data Science, IMILKOM IT Competition, Universitas Sumatera Utara |
-| 🚀 | Competed | Jagapadi · HELALOKA · Standbai | UM Metro Hackathon 2026 · JOINTS UGM 2026 · ForgeHacks Online 2026 |
+| 🚀 | Competed | Jagapadi · HELALOKA · Standbai · MLAKU · COBA | UM Metro Hackathon 2026 · JOINTS UGM 2026 · ForgeHacks Online 2026 · Gemastik XIX 2026 · COMPFEST 18 AIC |
 
 ## Experience
 
@@ -164,6 +164,8 @@
 | [IBL 2K26](https://ibl-eta.vercel.app) | Head of Backend: open-recruitment site for the ITS Basketball League | [ibl-project](https://github.com/ibl-project) |
 | Website ARA 8.0 | Head of IT Dev Division: event website with registration, dashboards and CTFd; top contributor | ARenewalAgent-ITS |
 | [Standbai / UdaraSiaga](https://github.com/ITHACKITS/FE-FORGEHACK-2026) | Smoke and ash forecasts with household alerts, ForgeHacks Online 2026 | [ITHACKITS](https://github.com/ITHACKITS) |
+| MLAKU | Smart-city platform for Surabaya: computer vision and IoT watch traffic, flooding and road damage, and residents report through "Lapor, Rek!"; Gemastik XIX 2026, Smart City category | [ITHACKITS](https://github.com/ITHACKITS) |
+| [COBA](https://github.com/HikariReiziq/Compfest-AIC) | AI fashion stylist: MediaPipe face and body landmarks, Monk skin-tone and body-shape analysis, four curated style picks and a 3D WebGL try-on; COMPFEST 18 AI Innovation Challenge, Smart Commerce | COMPFEST 18 team |
 | [KECAMATRAS](https://github.com/airenmeyy/kelompok-1-eas-bigdata) | Kecamatan Metrics &amp; Anomaly Tracking of Surabaya: big-data pipeline and geospatial dashboard; top contributor | ITS Big Data course |
 | [Order Processing Service](https://github.com/baboey/fp-tka-1) | Cloud deployment with endpoint and Locust load testing; top contributor | ITS Cloud Computing course |
 | [Diffie-Hellman &amp; ElGamal](https://github.com/rezcape/Kriptografi_Diffie-Hellman-dan-ElGamal) | Key exchange and public-key encryption implementations in Python; main contributor | Cryptography course |
