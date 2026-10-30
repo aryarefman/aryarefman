@@ -583,31 +583,146 @@ export function createWorld({ name, scene, camera, width, height, dark, drift = 
     swayCamera(new THREE.Vector3(0, 0.1, 0), 2.2, 0.35);
   }
 
+  // ---------- planets for the numbers strip: each metric gets its own world ----------
+  // 3D value noise sampled on the sphere, so the painted equirect textures wrap without a seam
+  function noise3(x, y, z, seed) {
+    const h = (i, j, k) => { const v = Math.sin(i * 127.1 + j * 311.7 + k * 74.7 + seed * 19.3) * 43758.5453; return v - Math.floor(v); };
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = x - xi, yf = y - yi, zf = z - zi;
+    const s = (q) => q * q * (3 - 2 * q), u = s(xf), v = s(yf), w = s(zf);
+    const L = (a, b, q) => a + (b - a) * q;
+    return L(L(L(h(xi, yi, zi), h(xi + 1, yi, zi), u), L(h(xi, yi + 1, zi), h(xi + 1, yi + 1, zi), u), v),
+             L(L(h(xi, yi, zi + 1), h(xi + 1, yi, zi + 1), u), L(h(xi, yi + 1, zi + 1), h(xi + 1, yi + 1, zi + 1), u), v), w);
+  }
+  function fbm3(x, y, z, seed, oct = 5) {
+    let v = 0, a = 0.5, f = 1;
+    for (let i = 0; i < oct; i++) { v += a * noise3(x * f, y * f, z * f, seed + i); a *= 0.5; f *= 2.03; }
+    return v;
+  }
+  // paint(x, y, z) -> [r, g, b, alpha?, emissiveRGB?] (0..255) for every texel of a 512x256 equirect map
+  function planetTextures(paint, withEmissive = false) {
+    const W2 = 512, H2 = 256, make = () => { const c = document.createElement("canvas"); c.width = W2; c.height = H2; return c; };
+    const cm = make(), ce = withEmissive ? make() : null;
+    const gm = cm.getContext("2d"), im = gm.createImageData(W2, H2);
+    const ge = ce && ce.getContext("2d"), ie = ge && ge.createImageData(W2, H2);
+    for (let j = 0; j < H2; j++) {
+      const lat = (0.5 - (j + 0.5) / H2) * Math.PI;
+      for (let i = 0; i < W2; i++) {
+        const lon = ((i + 0.5) / W2) * TAU;
+        const x = Math.cos(lat) * Math.cos(lon), y = Math.sin(lat), z = Math.cos(lat) * Math.sin(lon);
+        const o = paint(x, y, z), k = (j * W2 + i) * 4;
+        im.data[k] = o[0]; im.data[k + 1] = o[1]; im.data[k + 2] = o[2]; im.data[k + 3] = o[3] ?? 255;
+        if (ie) { const e = o[4] || [0, 0, 0]; ie.data[k] = e[0]; ie.data[k + 1] = e[1]; ie.data[k + 2] = e[2]; ie.data[k + 3] = 255; }
+      }
+    }
+    gm.putImageData(im, 0, 0); if (ge) ge.putImageData(ie, 0, 0);
+    const tex = (c) => { const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 4; return tx; };
+    return { map: tex(cm), emissive: ce && tex(ce) };
+  }
+  const mix3 = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q, a[2] + (b[2] - a[2]) * q];
+  const ramp = (stops, q) => {
+    q = Math.min(1, Math.max(0, q));
+    for (let i = 1; i < stops.length; i++) if (q <= stops[i][0]) return mix3(stops[i - 1][1], stops[i][1], Math.max(0, (q - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0])));
+    return stops[stops.length - 1][1];
+  };
+  const PLANETS = [
+    { // rusty desert world with ice caps and craters
+      kind: "mars", glow: C.defend,
+      paint: (x, y, z) => {
+        const h = fbm3(x * 2.2, y * 2.2, z * 2.2, 1), crater = fbm3(x * 7, y * 7, z * 7, 9);
+        let c = ramp([[0.25, [92, 34, 22]], [0.45, [170, 74, 44]], [0.6, [214, 128, 78]], [0.75, [236, 182, 128]]], h);
+        if (crater > 0.62) c = mix3(c, [70, 28, 20], Math.min(1, (crater - 0.62) * 6));
+        const cap = Math.abs(y) + (h - 0.5) * 0.25;
+        if (cap > 0.86) c = mix3(c, [246, 240, 236], Math.min(1, (cap - 0.86) * 14));
+        return c;
+      },
+      moons: [{ r: 0.2, d: 2.0, speed: 1, tilt: 0.3, color: "#9a8f88" }],
+    },
+    { // molten world: black basalt crust split by glowing lava rivers
+      kind: "lava", glow: new THREE.Color("#ff5a2a"),
+      paint: (x, y, z) => {
+        const h = fbm3(x * 2.6, y * 2.6, z * 2.6, 4), vein = Math.abs(fbm3(x * 3.4, y * 3.4, z * 3.4, 12) - 0.5);
+        const crust = ramp([[0.3, [26, 18, 20]], [0.55, [58, 36, 34]], [0.8, [96, 62, 52]]], h);
+        const hot = Math.max(0, 1 - vein / 0.045);
+        const lava = ramp([[0, [255, 70, 20]], [0.6, [255, 150, 40]], [1, [255, 236, 150]]], hot);
+        return [...mix3(crust, lava, hot), 255, lava.map((v) => v * hot)];
+      },
+      emissive: true,
+    },
+    { // banded amber gas giant with broad rings
+      kind: "saturn", glow: C.see, tilt: 0.42,
+      paint: (x, y, z) => {
+        const w = fbm3(x * 3, y * 3, z * 3, 7) * 0.5;
+        const band = 0.5 + 0.5 * Math.sin(y * 14 + w * 4) * Math.cos(y * 5.3 + w);
+        return ramp([[0, [138, 86, 40]], [0.4, [214, 152, 82]], [0.7, [240, 206, 146]], [1, [252, 236, 200]]], band);
+      },
+      rings: [[1.35, 1.6, "#d9b27a", 0.55], [1.64, 2.05, "#f1d6a4", 0.75], [2.1, 2.35, "#b48a5a", 0.45]],
+    },
+    { // icy blue giant with a dark storm, a faint ring and a small moon
+      kind: "neptune", glow: new THREE.Color("#5aa8ff"), tilt: 0.25,
+      paint: (x, y, z) => {
+        const w = fbm3(x * 2.5, y * 2.5, z * 2.5, 3);
+        let c = ramp([[0, [24, 52, 140]], [0.5, [52, 112, 214]], [1, [140, 206, 255]]], 0.5 + 0.5 * Math.sin(y * 9 + w * 3));
+        const sd = Math.hypot(x - 0.75, y + 0.3, z - 0.45);
+        if (sd < 0.32) c = mix3(c, [16, 28, 86], Math.min(1, (0.32 - sd) * 7));
+        if (Math.abs(y - 0.35) < 0.04 && w > 0.5) c = mix3(c, [236, 246, 255], 0.8);
+        return c;
+      },
+      moons: [{ r: 0.24, d: 2.1, speed: -1, tilt: -0.4, color: "#d8dde6" }],
+      rings: [[1.7, 1.78, "#9fc4ff", 0.3]],
+    },
+    { // living ocean world: seas, green continents, drifting clouds
+      kind: "earth", glow: C.decide,
+      paint: (x, y, z) => {
+        const h = fbm3(x * 1.8, y * 1.8, z * 1.8, 21);
+        if (Math.abs(y) > 0.9) return [240, 246, 255];
+        if (h < 0.52) return ramp([[0.2, [14, 40, 110]], [0.52, [40, 110, 196]]], h);
+        return ramp([[0.52, [216, 200, 140]], [0.56, [72, 140, 64]], [0.7, [44, 98, 50]], [0.8, [122, 104, 80]]], h);
+      },
+      clouds: (x, y, z) => { const c = fbm3(x * 3, y * 4.8, z * 3, 33); return [255, 255, 255, Math.min(230, Math.max(0, (c - 0.52) * 4) * 255)]; },
+      moons: [{ r: 0.22, d: 2.1, speed: 1, tilt: 0.2, color: "#c8c4c0" }],
+    },
+  ];
+
+  function planet(spec, R) {
+    const g = new THREE.Group(), tiltGroup = new THREE.Group(), spin = new THREE.Group();
+    tiltGroup.rotation.set(spec.rings ? 0.42 : 0, 0, spec.tilt ?? 0.2); g.add(tiltGroup); tiltGroup.add(spin);   // ringed planets lean toward the viewer so the rings read as discs
+    const { map, emissive } = planetTextures(spec.paint, !!spec.emissive);
+    spin.add(mesh(new THREE.SphereGeometry(R, 64, 40), new THREE.MeshStandardMaterial({
+      map, roughness: spec.kind === "earth" ? 0.6 : 0.9, metalness: 0,
+      ...(emissive ? { emissiveMap: emissive, emissive: 0xffffff, emissiveIntensity: 1.6 } : {}),
+    })));
+    let sky = null;
+    if (spec.clouds) {
+      sky = mesh(new THREE.SphereGeometry(R * 1.025, 64, 40), new THREE.MeshStandardMaterial({ map: planetTextures(spec.clouds).map, transparent: true, depthWrite: false, roughness: 1 }), { cast: false });
+      tiltGroup.add(sky);
+    }
+    const halo = glowSprite(spec.glow, R * 3.4); halo.material.opacity *= 0.5; halo.renderOrder = -1; g.add(halo);
+    (spec.rings || []).forEach(([a, b, color, op]) => {
+      const ring = mesh(new THREE.RingGeometry(R * a, R * b, 96, 1), new THREE.MeshStandardMaterial({ color, transparent: true, opacity: op, side: THREE.DoubleSide, roughness: 1, depthWrite: false }), { cast: false });
+      ring.rotation.x = -Math.PI / 2; tiltGroup.add(ring);
+    });
+    const moons = (spec.moons || []).map((m) => {
+      const pivot = new THREE.Group(); pivot.rotation.z = m.tilt; g.add(pivot);
+      const moon = mesh(new THREE.IcosahedronGeometry(R * m.r, 3), mat(new THREE.Color(m.color), { flatShading: false }));
+      moon.position.x = R * m.d; pivot.add(moon);
+      return { pivot, m };
+    });
+    g.userData.update = (p) => {
+      spin.rotation.y = TAU * p;
+      if (sky) sky.rotation.y = TAU * p * 2;                      // clouds outrun the ground, still loop-periodic
+      moons.forEach(({ pivot, m }) => (pivot.rotation.y = TAU * p * m.speed));
+    };
+    return g;
+  }
+
   function buildMetrics() {
-    LOOP = 4;
+    LOOP = 6;
     lights();
     if (stars3d) scene.add(stars(DARK ? 120 : 60, 22, 13));
-    const cols = [[C.defend, 7], [C.defend, 5], [C.see, 6], [C.decide, 4], [C.decide, 5]];
-    const cube = new THREE.BoxGeometry(0.42, 0.42, 0.42);
-    cols.forEach(([color, n], i) => {
-      const g = new THREE.Group(); g.position.set((i - 2) * 5.3, 0, 0); scene.add(g);
-      const base = mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.16, 6), mat(C.slate)); base.position.y = -0.08; g.add(base);
-      const ring = mesh(new THREE.TorusGeometry(0.98, 0.02, 6, 6), glow(color, 1.2), { cast: false }); ring.rotation.x = Math.PI / 2; ring.position.y = 0.01; g.add(ring);
-      const stack = [];
-      for (let k = 0; k < n; k++) {
-        const top = k === n - 1;
-        const c = mesh(cube, top ? glow(color, 1.6) : mat(color.clone().lerp(C.slate, 0.55 - k * 0.05)));
-        g.add(c); stack.push(c);
-        if (top) { const s = glowSprite(color, 1.3); c.add(s); }
-      }
-      animators.push((p) => {
-        stack.forEach((c, k) => {
-          const wave = Math.sin(TAU * p - i * 0.9 - k * 0.35);
-          c.position.set(0, 0.24 + k * 0.46 + 0.05 * wave * k / n, 0);
-          c.rotation.y = 0.25 * Math.sin(TAU * p + k * 0.5 + i);
-        });
-        g.rotation.y = 0.5 + 0.1 * Math.sin(TAU * p + i);
-      });
+    const sizes = [1.05, 1.0, 1.1, 1.1, 1.1];
+    PLANETS.forEach((spec, i) => {
+      const p = planet(spec, sizes[i]); p.position.set((i - 2) * 5.3, 1.5, 0); scene.add(p);
+      animators.push((q) => { p.userData.update(q); p.position.y = 1.5 + 0.08 * Math.sin(TAU * q + i * 1.2); });
     });
     camera.fov = 24;
     camera.position.set(0, 3.0, 19.5);
