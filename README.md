@@ -81,7 +81,7 @@
       <p>Sentinel-1 radar and Sentinel-2 imagery plus weather ensembles feed a water-balance model for fields in Metro, Lampung.<br/>
       Farmers get plain-language verdicts and Telegram alerts on drought, flood and pest risk; extension officers get a group dashboard and a 3D field diorama.</p>
       <p><code>FastAPI</code> <code>React</code> <code>Three.js</code> <code>Sentinel-1/2</code> <code>Open-Meteo</code> <code>Telegram</code></p>
-      <sub>Repository is private during judging.</sub>
+      <a href="https://github.com/ITHACKITS/UM-METRO-HACKATHON">Repository</a>
     </td>
   </tr>
   <tr>
@@ -91,7 +91,7 @@
       <sub><b>2nd place · IT Fest 2026, Universitas Brawijaya</b></sub>
       <p>Data structures and algorithms as interactive 3D objects in Augmented Reality, straight from a phone browser: 7 data structures, 8 algorithms and 3 challenge modes, with step-by-step playback of every comparison and swap.</p>
       <p><code>WebAR</code> <code>Three.js</code> <code>JavaScript</code> <code>Vercel</code></p>
-      <a href="https://semoga-kami-beruntung.vercel.app/">Live ↗</a> · <a href="https://github.com/MFaqihRidh0/Semoga-Kami-Beruntung">Repository</a>
+      <a href="https://semoga-kami-beruntung.vercel.app/">Live ↗</a> · <sub>repository is private</sub>
     </td>
     <td width="50%" valign="top">
       <img src="assets/projects/aromasys.webp" width="100%" alt="AromaSys landing page on a laptop with the AromaSys logo" />
@@ -154,7 +154,8 @@
 
 | Paper | Summary |
 | :--- | :--- |
-| 🧠 **[Least-Privilege Guardrails for Multilingual LLM Agents](https://github.com/aryarefman/paper)** | A deterministic verifier that catches over-privileged tool calls by LLM agents in English, Indonesian and Javanese, tested on SEA-LION, Qwen 2.5, Llama 3.1 and GPT-4o. |
+| 🛡️ **[Anytime-Valid Adversarial Evaluator Auditing (`coral-audit`)](https://github.com/aryarefman/coral-audit)** | Two-tier deterministic invariant + anytime-valid sequential e-value auditing and Stackelberg hardening for autonomous multi-agent discovery (`CORAL` / ADRS). |
+| 🔬 **[Noise-Conditional Latent Modulation for CoDD (`codd-modulation`)](https://github.com/aryarefman/codd-modulation)** | Vectorized PC-logit composition and noise-conditional latent-space modulation for Coupled Discrete Diffusion language models (`CoDD` / `PyJuice`). |
 | 📚 **[JEPA vs generative world models](https://github.com/aryarefman/penulisan-ilmiah)** | PRISMA 2020 systematic review: 2,812 records from 8 databases narrowed to 42 studies. |
 
 ## Team &amp; organisation work
